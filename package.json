@@ -1,0 +1,12 @@
+{
+  "name": "aerofocus",
+  "private": true,
+  "packageManager": "pnpm@10",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=web"
+  }
+}

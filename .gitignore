@@ -1,0 +1,4 @@
+node_modules
+dist
+.env
+stitch_flight_mode_focus_app
