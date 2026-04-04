@@ -6,6 +6,7 @@ import FooterTelemetryItem from "@/components/flight/FooterTelemetryItem";
 import OverlayMetric from "@/components/flight/OverlayMetric";
 import StatusDotLabel from "@/components/flight/StatusDotLabel";
 import "@/components/flight/activeFlight.css";
+import { PRESET_ROUTES } from "@/data/flightRoutes";
 import { useDistractionsCount } from "@/hooks/useDistractionsCount";
 import { useElapsedTime } from "@/hooks/useElapsedTime";
 import { subscribeToFlightChanges } from "@/services/flightService";
@@ -35,6 +36,7 @@ export default function ActiveFlight(): JSX.Element {
   const [isSyncing, setIsSyncing] = useState(true);
   const [actionError, setActionError] = useState<string | null>(null);
   const [isEnding, setIsEnding] = useState<"completed" | "aborted" | null>(null);
+  const [istTime, setIstTime] = useState("--:--:--");
 
   const distractionsCount = useDistractionsCount(flightIdParam ?? currentFlight?.id ?? null);
   const elapsedMs = useElapsedTime(currentFlight?.start_time ?? null);
@@ -49,6 +51,27 @@ export default function ActiveFlight(): JSX.Element {
 
     void ensureFlight();
   }, [currentFlight, syncWithBackend]);
+
+  useEffect(() => {
+    const updateIstTime = () => {
+      const next = new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }).format(new Date());
+
+      setIstTime(next);
+    };
+
+    updateIstTime();
+    const intervalId = window.setInterval(updateIstTime, 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = subscribeToFlightChanges((flight: Flight) => {
@@ -75,6 +98,22 @@ export default function ActiveFlight(): JSX.Element {
   }, [currentFlight]);
 
   const canRenderActiveFlight = currentFlight && currentFlight.status === "active" && (!flightIdParam || currentFlight.id === flightIdParam);
+
+  const presetRouteMatch = useMemo(() => {
+    if (!currentFlight) {
+      return null;
+    }
+
+    const origin = currentFlight.origin.toUpperCase();
+    const destination = currentFlight.destination.toUpperCase();
+
+    return PRESET_ROUTES.find(
+      (route) => route.origin.toUpperCase() === origin && route.destination.toUpperCase() === destination
+    ) ?? null;
+  }, [currentFlight]);
+
+  const resolvedAircraftType = aircraftType ?? presetRouteMatch?.aircraft ?? "UNSPECIFIED";
+  const resolvedDistanceKm = distanceKm ?? presetRouteMatch?.distanceKm ?? null;
 
   const handleEndFlight = async (status: "completed" | "aborted") => {
     if (!currentFlight) {
@@ -173,8 +212,8 @@ export default function ActiveFlight(): JSX.Element {
         <div className="absolute bottom-16 left-16 z-20">
           <div className="flex flex-col gap-6">
             <div className="space-y-1">
-              <p className="font-label text-[9px] tracking-[0.2em] text-secondary uppercase">Local Time (DST)</p>
-              <p className="font-mono text-lg text-primary">14:52 <span className="text-xs text-secondary-dim">UTC+1</span></p>
+              <p className="font-label text-[9px] tracking-[0.2em] text-secondary uppercase">Local Time (IST)</p>
+              <p className="font-mono text-lg text-primary">{istTime} <span className="text-xs text-secondary-dim">UTC+5:30</span></p>
             </div>
             <div className="space-y-1">
               <p className="font-label text-[9px] tracking-[0.2em] text-secondary uppercase">External Temp</p>
@@ -186,8 +225,8 @@ export default function ActiveFlight(): JSX.Element {
         <div className="absolute bottom-16 right-16 z-20">
           <div className="flex flex-col gap-8 items-end">
             <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-              <OverlayMetric label="Aircraft" value={aircraftType ?? "UNSPECIFIED"} />
-              <OverlayMetric label="Distance" value={distanceKm ? `${distanceKm.toLocaleString()} KM` : "--"} />
+              <OverlayMetric label="Aircraft" value={resolvedAircraftType} />
+              <OverlayMetric label="Distance" value={resolvedDistanceKm ? `${resolvedDistanceKm.toLocaleString()} KM` : "--"} />
               <OverlayMetric label="Signal" value="STABLE" />
               <OverlayMetric label="Distractions" value={String(distractionsCount)} />
             </div>

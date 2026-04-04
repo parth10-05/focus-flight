@@ -1,4 +1,54 @@
-const WEB_APP_URL = 'http://localhost:5173';
+const DEFAULT_WEB_APP_URL = 'http://localhost:5173';
+
+function parseEnv(content) {
+  const result = {};
+  const lines = content.split(/\r?\n/);
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) {
+      continue;
+    }
+
+    const separatorIndex = line.indexOf('=');
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    const key = line.slice(0, separatorIndex).trim();
+    const value = line.slice(separatorIndex + 1).trim();
+    result[key] = value;
+  }
+
+  return result;
+}
+
+async function resolveWebAppUrl() {
+  const normalizeWebAppUrl = (value) => {
+    const raw = (value || '').trim();
+    if (!raw) {
+      return DEFAULT_WEB_APP_URL;
+    }
+
+    const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    return withProtocol.replace(/\/+$/, '');
+  };
+
+  try {
+    const envUrl = chrome.runtime.getURL('.env');
+    const response = await fetch(envUrl, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return normalizeWebAppUrl(DEFAULT_WEB_APP_URL);
+    }
+
+    const envText = await response.text();
+    const env = parseEnv(envText);
+    return normalizeWebAppUrl(env.EXT_WEB_APP_URL || env.WEB_APP_URL || DEFAULT_WEB_APP_URL);
+  } catch {
+    return normalizeWebAppUrl(DEFAULT_WEB_APP_URL);
+  }
+}
 
 const blockedDomainEl = document.getElementById('blocked-domain');
 const remainingTimeEl = document.getElementById('remaining-time');
@@ -26,24 +76,27 @@ function getCurrentBlockedHost() {
   return 'blocked destination';
 }
 
-function wireActions(activeFlightId) {
+function wireActions(activeFlightId, webAppUrl) {
   if (returnBtn) {
     returnBtn.addEventListener('click', () => {
       const target = activeFlightId ? `/flight/${activeFlightId}` : '/preflight';
-      chrome.tabs.create({ url: `${WEB_APP_URL}${target}` });
+      chrome.tabs.create({ url: `${webAppUrl}${target}` });
     });
   }
 
   if (abortBtn) {
     abortBtn.addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'CLEAR_SESSION' }, () => {
-        chrome.tabs.create({ url: `${WEB_APP_URL}/preflight` });
+        chrome.tabs.create({ url: `${webAppUrl}/preflight` });
       });
     });
   }
 }
 
-chrome.storage.local.get(['activeFlight'], (result) => {
+async function initializeBlockedPage() {
+  const webAppUrl = await resolveWebAppUrl();
+
+  chrome.storage.local.get(['activeFlight'], (result) => {
   const flight = result.activeFlight;
   const blockedHost = getCurrentBlockedHost();
 
@@ -55,7 +108,7 @@ chrome.storage.local.get(['activeFlight'], (result) => {
     if (remainingTimeEl) {
       remainingTimeEl.textContent = '00:00:00';
     }
-    wireActions(null);
+    wireActions(null, webAppUrl);
     return;
   }
 
@@ -80,5 +133,8 @@ chrome.storage.local.get(['activeFlight'], (result) => {
 
   updateRemaining();
   setInterval(updateRemaining, 1000);
-  wireActions(flight.id || null);
-});
+  wireActions(flight.id || null, webAppUrl);
+  });
+}
+
+void initializeBlockedPage();
