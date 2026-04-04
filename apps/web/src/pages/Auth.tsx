@@ -74,10 +74,6 @@ export default function Auth(): JSX.Element {
     });
   };
 
-  const clearSessionInExtension = () => {
-    sendToExtension({ type: "CLEAR_SESSION" });
-  };
-
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
@@ -131,26 +127,6 @@ export default function Auth(): JSX.Element {
       setNoticeMessage("Signup request submitted. Check your email if confirmation is enabled.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Signup failed");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-    setNoticeMessage(null);
-
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      clearSessionInExtension();
-      setNoticeMessage("Logged out successfully.");
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Logout failed");
     } finally {
       setIsLoading(false);
     }
@@ -246,14 +222,6 @@ export default function Auth(): JSX.Element {
                 className="px-6 py-3 rounded-small bg-[#c1c7ce] text-[#3b4147] font-mono text-[11px] tracking-[0.2em] uppercase transition-all duration-150 ease-linear disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Authenticating" : mode === "login" ? "Login" : "Create Account"}
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                disabled={isLoading}
-                className="px-6 py-3 rounded-small border border-[#45484b]/20 text-[#c1c7ce] font-mono text-[11px] tracking-[0.2em] uppercase transition-all duration-150 ease-linear hover:bg-[#c1c7ce]/[0.02] disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                Logout
               </button>
             </div>
           </form>
