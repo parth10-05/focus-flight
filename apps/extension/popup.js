@@ -88,8 +88,19 @@ chrome.storage.local.get(['activeFlight'], (result) => {
     return;
   }
 
+  let hasTriggeredExpiryCheck = false;
+
   function updateTimer() {
     const startMs = new Date(flight.start_time).getTime();
+    const durationSec = Number(flight.duration || 0);
+
+    if (durationSec <= 0) {
+      if (elapsedDisplay) {
+        elapsedDisplay.textContent = '00:00:00';
+      }
+      return;
+    }
+
     if (Number.isNaN(startMs)) {
       if (elapsedDisplay) {
         elapsedDisplay.textContent = '00:00:00';
@@ -98,12 +109,18 @@ chrome.storage.local.get(['activeFlight'], (result) => {
     }
 
     const elapsedS = Math.floor((Date.now() - startMs) / 1000);
-    const h = String(Math.floor(elapsedS / 3600)).padStart(2, '0');
-    const m = String(Math.floor((elapsedS % 3600) / 60)).padStart(2, '0');
-    const s = String(elapsedS % 60).padStart(2, '0');
+    const remainingS = Math.max(0, durationSec - elapsedS);
+    const h = String(Math.floor(remainingS / 3600)).padStart(2, '0');
+    const m = String(Math.floor((remainingS % 3600) / 60)).padStart(2, '0');
+    const s = String(remainingS % 60).padStart(2, '0');
 
     if (elapsedDisplay) {
       elapsedDisplay.textContent = `${h}:${m}:${s}`;
+    }
+
+    if (remainingS === 0 && !hasTriggeredExpiryCheck) {
+      hasTriggeredExpiryCheck = true;
+      chrome.runtime.sendMessage({ type: 'CHECK_FLIGHT_EXPIRY' });
     }
   }
 

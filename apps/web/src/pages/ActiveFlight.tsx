@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import BlockedSiteTag from "@/components/flight/BlockedSiteTag";
@@ -37,6 +37,7 @@ export default function ActiveFlight(): JSX.Element {
   const [actionError, setActionError] = useState<string | null>(null);
   const [isEnding, setIsEnding] = useState<"completed" | "aborted" | null>(null);
   const [istTime, setIstTime] = useState("--:--:--");
+  const hasAutoCompletedRef = useRef(false);
 
   const distractionsCount = useDistractionsCount(flightIdParam ?? currentFlight?.id ?? null);
   const elapsedMs = useElapsedTime(currentFlight?.start_time ?? null);
@@ -145,6 +146,19 @@ export default function ActiveFlight(): JSX.Element {
       fuelLabel: `${Math.round(fuelPct)}%`
     };
   }, [currentFlight?.duration, elapsedMs]);
+
+  useEffect(() => {
+    if (!currentFlight || isEnding || hasAutoCompletedRef.current) {
+      return;
+    }
+
+    if (remainingMs > 0) {
+      return;
+    }
+
+    hasAutoCompletedRef.current = true;
+    void handleEndFlight("completed");
+  }, [currentFlight, isEnding, remainingMs]);
 
   const handleEndFlight = async (status: "completed" | "aborted") => {
     if (!currentFlight) {

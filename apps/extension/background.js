@@ -81,6 +81,56 @@ function isSessionLike(value) {
   return Boolean(value && typeof value === 'object' && value.access_token);
 }
 
+function getUserIdFromAccessToken(accessToken) {
+  try {
+    const tokenParts = String(accessToken || '').split('.');
+    if (tokenParts.length < 2) {
+      return null;
+    }
+
+    const base64 = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+    const payload = JSON.parse(atob(padded));
+
+    return typeof payload?.sub === 'string' ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+function getFlightRemainingSeconds(flight) {
+  const durationSec = Number(flight?.duration || 0);
+  const startMs = new Date(flight?.start_time || '').getTime();
+
+  if (durationSec <= 0 || Number.isNaN(startMs)) {
+    return null;
+  }
+
+  const elapsedSec = Math.floor((Date.now() - startMs) / 1000);
+  return durationSec - elapsedSec;
+}
+
+function isFlightExpired(flight) {
+  const remainingSec = getFlightRemainingSeconds(flight);
+  return remainingSec !== null && remainingSec <= 0;
+}
+
+function buildFlightsPollUrl(configUrl, session) {
+  const userId = session?.access_token ? getUserIdFromAccessToken(session.access_token) : null;
+  const query = new URLSearchParams({
+    status: 'eq.active',
+    select: '*,blocked_sites(*)',
+    order: 'start_time.desc',
+    limit: '1'
+  });
+
+  if (userId) {
+    query.set('user_id', `eq.${userId}`);
+  }
+
+  return `${configUrl}/rest/v1/flights?${query.toString()}`;
+}
+
 async function clearAllRules() {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
   const removeIds = existing.map((rule) => rule.id);
@@ -90,6 +140,81 @@ async function clearAllRules() {
       removeRuleIds: removeIds,
       addRules: []
     });
+  }
+}
+
+async function completeExpiredFlight(flight, configUrl, headers) {
+  const flightId = flight?.id;
+
+  if (!flightId) {
+    return false;
+  }
+
+  try {
+    const patchHeaders = {
+      ...headers,
+      Prefer: 'return=representation'
+    };
+
+    const updateResponse = await fetch(
+      `${configUrl}/rest/v1/flights?id=eq.${encodeURIComponent(flightId)}&status=eq.active`,
+      {
+        method: 'PATCH',
+        headers: patchHeaders,
+        body: JSON.stringify({
+          status: 'completed',
+          end_time: new Date().toISOString()
+        })
+      }
+    );
+
+    if (!updateResponse.ok) {
+      console.warn('[AeroFocus] Failed to complete expired flight:', updateResponse.status, await updateResponse.text());
+      return false;
+    }
+
+    const updatedRows = await updateResponse.json();
+    if (!Array.isArray(updatedRows) || updatedRows.length === 0) {
+      return true;
+    }
+
+    const sessionCheckResponse = await fetch(
+      `${configUrl}/rest/v1/sessions_log?flight_id=eq.${encodeURIComponent(flightId)}&select=id&limit=1`,
+      { headers }
+    );
+
+    if (!sessionCheckResponse.ok) {
+      console.warn('[AeroFocus] Failed to verify session log for expired flight');
+      return true;
+    }
+
+    const existingSessionLogs = await sessionCheckResponse.json();
+    if (Array.isArray(existingSessionLogs) && existingSessionLogs.length > 0) {
+      return true;
+    }
+
+    const startMs = new Date(flight.start_time || '').getTime();
+    const actualDurationMinutes = Number.isNaN(startMs)
+      ? Math.max(0, Math.round(Number(flight.duration || 0) / 60))
+      : Math.max(0, Math.round((Date.now() - startMs) / 60000));
+
+    const sessionInsertResponse = await fetch(`${configUrl}/rest/v1/sessions_log`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        flight_id: flightId,
+        actual_duration: actualDurationMinutes
+      })
+    });
+
+    if (!sessionInsertResponse.ok) {
+      console.warn('[AeroFocus] Failed to create session log for expired flight:', sessionInsertResponse.status, await sessionInsertResponse.text());
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('[AeroFocus] Error completing expired flight:', error);
+    return false;
   }
 }
 
@@ -190,12 +315,8 @@ async function poll() {
       console.log('[AeroFocus] No session, polling with anon key only');
     }
 
-    const response = await fetch(
-      `${config.url}/rest/v1/flights?status=eq.active&select=*,blocked_sites(*)`,
-      {
-        headers
-      }
-    );
+    const flightsUrl = buildFlightsPollUrl(config.url, session);
+    const response = await fetch(flightsUrl, { headers });
 
     if (response.status === 401) {
       if (session?.access_token) {
@@ -215,6 +336,18 @@ async function poll() {
 
     if (Array.isArray(flights) && flights.length > 0) {
       const flight = flights[0];
+
+      if (isFlightExpired(flight)) {
+        const completed = await completeExpiredFlight(flight, config.url, headers);
+
+        if (completed) {
+          await chrome.storage.local.remove('activeFlight');
+          await clearAllRules();
+          console.log('[AeroFocus] Expired flight auto-completed and rules cleared');
+          return;
+        }
+      }
+
       const domains = (flight.blocked_sites || []).map((site) => site.domain);
 
       await chrome.storage.local.set({ activeFlight: flight });
@@ -262,6 +395,12 @@ function handleBridgeMessage(message, sendResponse) {
     void chrome.storage.local.remove(['supabaseSession', 'activeFlight']);
     stopPolling();
     void clearAllRules();
+    sendResponse({ ok: true });
+    return true;
+  }
+
+  if (message?.type === 'CHECK_FLIGHT_EXPIRY') {
+    void poll();
     sendResponse({ ok: true });
     return true;
   }

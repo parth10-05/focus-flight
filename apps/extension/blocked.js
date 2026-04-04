@@ -112,6 +112,8 @@ async function initializeBlockedPage() {
     return;
   }
 
+  let hasTriggeredExpiryCheck = false;
+
   function updateRemaining() {
     const startMs = new Date(flight.start_time).getTime();
     const durationSec = Number(flight.duration || 0);
@@ -128,6 +130,11 @@ async function initializeBlockedPage() {
 
     if (remainingTimeEl) {
       remainingTimeEl.textContent = formatDuration(remainingSec);
+    }
+
+    if (remainingSec <= 0 && !hasTriggeredExpiryCheck) {
+      hasTriggeredExpiryCheck = true;
+      chrome.runtime.sendMessage({ type: 'CHECK_FLIGHT_EXPIRY' });
     }
   }
 
