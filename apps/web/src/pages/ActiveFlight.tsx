@@ -40,6 +40,15 @@ export default function ActiveFlight(): JSX.Element {
 
   const distractionsCount = useDistractionsCount(flightIdParam ?? currentFlight?.id ?? null);
   const elapsedMs = useElapsedTime(currentFlight?.start_time ?? null);
+  const remainingMs = useMemo(() => {
+    const missionDurationMs = (currentFlight?.duration ?? 0) * 1000;
+
+    if (missionDurationMs <= 0) {
+      return 0;
+    }
+
+    return Math.max(0, missionDurationMs - elapsedMs);
+  }, [currentFlight?.duration, elapsedMs]);
 
   useEffect(() => {
     const ensureFlight = async () => {
@@ -217,7 +226,7 @@ export default function ActiveFlight(): JSX.Element {
             <span className="h-[1px] w-12 bg-outline-variant/30"></span>
           </div>
           <div className="font-mono text-[120px] leading-none tracking-tighter text-primary font-light text-glow">
-            {formatElapsedTime(elapsedMs)}
+            {formatElapsedTime(remainingMs)}
           </div>
           <div className="mt-4 flex gap-8">
             <StatusDotLabel label="Uplink Active" pulsing />
