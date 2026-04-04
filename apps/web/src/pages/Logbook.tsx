@@ -28,12 +28,14 @@ function formatDate(value: string | null): string {
 
 function formatDuration(value: number | null): string {
   if (!value || value <= 0) {
-    return "00.0 HRS";
+    return "00:00";
   }
 
-  const seconds = value > 5000 ? value : value * 60;
-  const hours = seconds / 3600;
-  return `${hours.toFixed(1).padStart(4, "0")} HRS`;
+  const totalMinutes = value > 5000 ? Math.floor(value / 60) : Math.floor(value);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 export default function Logbook(): JSX.Element {
