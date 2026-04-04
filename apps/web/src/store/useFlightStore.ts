@@ -14,7 +14,7 @@ interface FlightStore {
   blockedSites: string[];
   startFlight: (config: FlightConfig) => Promise<Flight>;
   endFlight: (status: "completed" | "aborted") => Promise<void>;
-  syncWithBackend: () => Promise<void>;
+  syncWithBackend: (userId?: string) => Promise<void>;
 }
 
 export const useFlightStore = create<FlightStore>((set, get) => ({
@@ -44,7 +44,7 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
       blockedSites: []
     });
   },
-  syncWithBackend: async (): Promise<void> => {
+  syncWithBackend: async (_userId?: string): Promise<void> => {
     const activeFlight = await getActiveFlight();
     if (!activeFlight) {
       set({

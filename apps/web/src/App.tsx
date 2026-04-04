@@ -4,33 +4,21 @@ import {
   Route,
   Routes
 } from "react-router-dom";
+import ActiveFlight from "@/pages/ActiveFlight";
+import Analytics from "@/pages/Analytics";
+import Debrief from "@/pages/Debrief";
+import Logbook from "@/pages/Logbook";
 import PreFlight from "@/pages/PreFlight";
-
-function FlightPage(): JSX.Element {
-  return <div />;
-}
-
-function DebriefPage(): JSX.Element {
-  return <div />;
-}
-
-function LogbookPage(): JSX.Element {
-  return <div />;
-}
-
-function AnalyticsPage(): JSX.Element {
-  return <div />;
-}
 
 export default function App(): JSX.Element {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/preflight" element={<PreFlight />} />
-        <Route path="/flight/:id" element={<FlightPage />} />
-        <Route path="/debrief/:id" element={<DebriefPage />} />
-        <Route path="/logbook" element={<LogbookPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/flight/:id" element={<ActiveFlight />} />
+        <Route path="/debrief/:id" element={<Debrief />} />
+        <Route path="/logbook" element={<Logbook />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="*" element={<Navigate to="/preflight" replace />} />
       </Routes>
     </BrowserRouter>

@@ -1,0 +1,30 @@
+.active-flight-page .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+.active-flight-page .route-glow {
+  filter: drop-shadow(0 0 8px rgba(193, 199, 206, 0.4));
+}
+
+.active-flight-page .glass-panel {
+  background: rgba(13, 14, 15, 0.7);
+  backdrop-filter: blur(20px);
+}
+
+.active-flight-page .text-glow {
+  text-shadow: 0 0 15px rgba(193, 199, 206, 0.3);
+}
+
+@keyframes scan {
+  from {
+    top: 0%;
+  }
+
+  to {
+    top: 100%;
+  }
+}
+
+.active-flight-page .animate-scan {
+  animation: scan 12s linear infinite;
+}

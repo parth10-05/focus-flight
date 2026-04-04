@@ -29,3 +29,25 @@ body {
   font-family: var(--font-sans);
   line-height: 1.6;
 }
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+.technical-font {
+  font-family: var(--font-mono);
+}
+
+.label-font {
+  font-family: 'Space Grotesk', var(--font-sans);
+}
+
+.grain-overlay {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuD9tdKCpGUQHxQ4S4_zqUZyBhntNX8c1FALLfxV2Vgo4zM2Bn_xN4dG0odV5zYtnIxjADO6BPA31lVFMMo6fRR73CRDApPyw27xNjaVyVaX1-8pM4UhYvnpiggvltKP4EIPXkzorR4z4flaCX5lNQrroC1GrS5IlIQGjy5LxfrTkfeDgGwFDI40j_F9Cc9iBadDMODCIiBU7rVZM301kJi0CX_eGzloDuFzPzSeKEJvflxT3PCG9i1TsSN2dYX54YYHzlVwOVC-FPkp);
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+.horizon-glow {
+  background: radial-gradient(circle at 50% 100%, rgba(193, 199, 206, 0.15) 0%, rgba(13, 14, 15, 0) 70%);
+}
