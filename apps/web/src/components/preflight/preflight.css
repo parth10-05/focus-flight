@@ -1,0 +1,17 @@
+.preflight-page .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+.preflight-duration-slider::-webkit-slider-runnable-track {
+  background: #45484b;
+  height: 2px;
+}
+
+.preflight-duration-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px;
+  width: 12px;
+  background: #c1c7ce;
+  margin-top: -5px;
+  border-radius: 0px;
+}

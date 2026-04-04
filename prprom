@@ -1,0 +1,205 @@
+You are a senior full-stack engineer. Build a production-grade monorepo for AeroFocus — a focus session app with a flight metaphor.
+
+---
+
+## System overview
+
+Three separate systems with strict responsibility boundaries:
+
+- **Web app** (React + Vite): session creation, immersive cockpit UI, analytics, logbook
+- **Chrome extension** (Manifest v3): site blocking enforcement only — no business logic
+- **Supabase backend**: single source of truth for all state
+
+No cross-contamination. The extension never owns state. The web app never touches declarativeNetRequest.
+
+---
+
+## Monorepo layout
+
+root/
+  apps/
+    web/          → React + Vite + Tailwind + Zustand + React Router
+    extension/    → Manifest v3 Chrome extension
+  packages/
+    config/       → shared constants (Supabase URL, table names, status enums)
+  supabase/
+    schema.sql
+    policies.sql
+
+---
+
+## Database schema (Supabase Postgres)
+
+```sql
+-- users: managed by Supabase Auth, no custom table needed
+
+create table flights (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid references auth.users not null,
+  origin      text not null,
+  destination text not null,
+  duration    int not null,        -- planned seconds
+  start_time  timestamptz,
+  end_time    timestamptz,
+  status      text check (status in ('planned','active','completed','aborted')) default 'planned'
+);
+
+create table blocked_sites (
+  id        uuid primary key default gen_random_uuid(),
+  flight_id uuid references flights on delete cascade,
+  domain    text not null
+);
+
+create table sessions_log (
+  id                       uuid primary key default gen_random_uuid(),
+  flight_id                uuid references flights on delete cascade,
+  actual_duration          int,   -- seconds
+  distractions_blocked_count int default 0
+);
+```
+
+Enable RLS on all tables. Users may only read/write their own rows.
+
+---
+
+## Web app
+
+### Pages
+1. `/preflight` — configure origin, destination, duration, blocked sites → calls `createFlight()`
+2. `/flight/:id` — immersive active session view with timer, route, status tags
+3. `/debrief/:id` — post-flight summary, stats
+4. `/logbook` — paginated list of past flights from `sessions_log` join `flights`
+5. `/analytics` — aggregate stats (total focus time, distraction trends)
+
+### Zustand store (`useFlightStore`)
+```ts
+interface FlightStore {
+  currentFlight: Flight | null
+  isActive: boolean
+  blockedSites: string[]
+  // Timer is DERIVED, never stored:
+  // elapsed = Date.now() - currentFlight.start_time
+  startFlight: (config: FlightConfig) => Promise
+  endFlight: (status: 'completed' | 'aborted') => Promise
+  syncWithBackend: () => Promise
+}
+```
+
+Timer rule: compute `elapsed = now - start_time` on every render tick.
+Never use setInterval as the authoritative time source. setInterval is only for triggering re-renders.
+
+### Supabase service (`src/services/flightService.ts`)
+Implement and export only:
+- `createFlight(config)` → inserts flight with status='active', start_time=now
+- `getActiveFlight(userId)` → returns single active flight or null
+- `completeFlight(flightId, status)` → updates status + end_time, inserts sessions_log row
+- `subscribeToFlightChanges(userId, callback)` → Supabase Realtime on flights table, INSERT + UPDATE events
+
+---
+
+## Chrome extension
+
+### manifest.json
+```json
+{
+  "manifest_version": 3,
+  "permissions": ["storage", "tabs", "scripting", "declarativeNetRequest"],
+  "host_permissions": [""],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html" }
+}
+```
+
+### background.js (service worker)
+Responsibilities — only these:
+1. Poll Supabase REST API every 15 seconds for active flight (`GET /rest/v1/flights?status=eq.active`)
+2. On active flight found: extract `blocked_sites`, call `updateBlockingRules(domains)`
+3. On no active flight: clear all blocking rules
+4. On distraction blocked: `POST /rest/v1/sessions_log` to increment `distractions_blocked_count`
+
+Use `chrome.declarativeNetRequest.updateDynamicRules()` for all blocking.
+Blocked domains redirect to `blocked.html` (bundled in extension).
+
+Auth: store Supabase session token in `chrome.storage.local` after user logs in via web app. Web app writes to `chrome.storage` on login — extension reads it on startup.
+
+### popup.html
+Minimal: show elapsed time if flight active, show "No active flight" otherwise.
+One button: "Start quick flight" → opens web app `/preflight` in new tab.
+No session logic in the popup.
+
+---
+
+## Sync contract between web app and extension
+
+The web app owns session start/stop. The extension is a passive consumer.
+
+| Event | Web App action | Extension reaction |
+|---|---|---|
+| User starts flight | INSERT flights (status=active) | Next poll picks it up, activates blocking |
+| User ends flight | UPDATE flights (status=completed) | Next poll clears rules |
+| Tab blocked | — | POST increment to sessions_log |
+| Extension opens | Reads chrome.storage for token | Polls immediately |
+
+Polling interval: 15s. Acceptable latency. Do not implement websockets in the extension.
+
+---
+
+## Design system
+
+Reference: `/stitch_flight_mode_focus_app/` in the root directory.
+
+This directory contains:
+- `stitch_design.md` — complete design system (colors, typography, spacing, component rules)
+- Individual screen HTML files — one per page, pixel-accurate
+
+Your job is to **replicate these screens in React**, not reinterpret them.
+Strip the HTML into components. Extract inline styles into Tailwind classes or CSS variables.
+Do not invent new UI. Do not substitute components. If it's in the HTML, build it. If it's not, don't add it.
+
+### Mapping: HTML file → React page
+
+| HTML file | React route | Component |
+|---|---|---|
+| `preflight.html` | `/preflight` | `pages/PreFlight.tsx` |
+| `active_flight.html` | `/flight/:id` | `pages/ActiveFlight.tsx` |
+| `post_flight.html` | `/debrief/:id` | `pages/Debrief.tsx` |
+| `analytics.html` | `/analytics` | `pages/Analytics.tsx` |
+| `logbook.html` | `/logbook` | `pages/Logbook.tsx` |
+| `blocked.html` | (extension only) | `apps/extension/blocked.html` — copy as-is, no React needed |
+| `popup.html` | (extension only) | `apps/extension/popup.html` — copy as-is, no React needed |
+
+### Process per screen
+1. Read the HTML file
+2. Identify repeating structures → extract as components into `src/components/`
+3. Wire real data where the HTML has placeholder text (timer, route, stats)
+4. Preserve all classnames, spacing, and color values exactly
+
+Dark theme. Background base: `#070B14`. Surface: `#0D1825`. Elevated: `#131E2E`.
+
+Accents:
+- Active/success: `#1DB88A` (radar green)
+- Interactive/info: `#4FC3F7` (altitude blue)  
+- Warning: `#F0A500` (caution amber)
+
+Text: primary `#E8F4FF`, secondary `#7EB8CC`, muted `#4A7C9A`.
+
+Rules:
+- No borders as dividers — use background color shifts
+- No heavy drop shadows — use tonal layering
+- Corner radius: 8px standard, 4px for small tags
+- Font: monospace for timer and telemetry data, sans-serif for UI text
+- All tags/status badges use monospace, uppercase, letter-spacing 0.08em
+
+---
+
+## Output required
+
+Generate in this order:
+
+1. `supabase/schema.sql` + `supabase/policies.sql`
+2. `packages/config/index.ts` — shared constants
+3. `apps/web/` — full src/ with all pages, store, services, hooks
+4. `apps/extension/` — manifest.json, background.js, popup.html, blocked.html
+
+For each file: complete, runnable code. No placeholder comments like `// TODO` or `// implement this`.
+Flag any environment variables needed (VITE_SUPABASE_URL etc.) in a `.env.example` at root.

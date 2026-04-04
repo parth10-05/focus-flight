@@ -1,6 +1,5 @@
 create table flights (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users not null,
   origin text not null,
   destination text not null,
   duration int not null,

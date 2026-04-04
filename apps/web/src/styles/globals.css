@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-base: #070B14;
+  --color-surface: #0D1825;
+  --color-elevated: #131E2E;
+  --color-accent-green: #1DB88A;
+  --color-accent-blue: #4FC3F7;
+  --color-accent-amber: #F0A500;
+  --color-text-primary: #E8F4FF;
+  --color-text-secondary: #7EB8CC;
+  --color-text-muted: #4A7C9A;
+  --radius-standard: 8px;
+  --radius-small: 4px;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
