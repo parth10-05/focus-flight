@@ -115,6 +115,27 @@ export default function ActiveFlight(): JSX.Element {
   const resolvedAircraftType = aircraftType ?? presetRouteMatch?.aircraft ?? "UNSPECIFIED";
   const resolvedDistanceKm = distanceKm ?? presetRouteMatch?.distanceKm ?? null;
 
+  const telemetry = useMemo(() => {
+    const phase = elapsedMs / 1000;
+
+    const altitudeFt = Math.max(
+      30000,
+      Math.round(59000 + Math.sin(phase / 18) * 1300 + Math.cos(phase / 9) * 650)
+    );
+
+    const speedMach = Math.max(0.72, 1.85 + Math.sin(phase / 20) * 0.22);
+
+    const missionSeconds = currentFlight?.duration ?? 0;
+    const progress = missionSeconds > 0 ? Math.min(1, (elapsedMs / 1000) / missionSeconds) : 0;
+    const fuelPct = Math.max(5, Math.min(100, 100 - progress * 88 + Math.sin(phase / 16) * 1.2));
+
+    return {
+      altitudeLabel: `${altitudeFt.toLocaleString()} FT`,
+      speedLabel: `MACH ${speedMach.toFixed(2)}`,
+      fuelLabel: `${Math.round(fuelPct)}%`
+    };
+  }, [currentFlight?.duration, elapsedMs]);
+
   const handleEndFlight = async (status: "completed" | "aborted") => {
     if (!currentFlight) {
       return;
@@ -210,14 +231,10 @@ export default function ActiveFlight(): JSX.Element {
         </div>
 
         <div className="absolute bottom-16 left-16 z-20">
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4">
             <div className="space-y-1">
               <p className="font-label text-[9px] tracking-[0.2em] text-secondary uppercase">Local Time (IST)</p>
               <p className="font-mono text-lg text-primary">{istTime} <span className="text-xs text-secondary-dim">UTC+5:30</span></p>
-            </div>
-            <div className="space-y-1">
-              <p className="font-label text-[9px] tracking-[0.2em] text-secondary uppercase">External Temp</p>
-              <p className="font-mono text-lg text-primary">-56°C <span className="text-xs text-secondary-dim">ISA-12</span></p>
             </div>
           </div>
         </div>
@@ -227,7 +244,8 @@ export default function ActiveFlight(): JSX.Element {
             <div className="grid grid-cols-2 gap-x-12 gap-y-4">
               <OverlayMetric label="Aircraft" value={resolvedAircraftType} />
               <OverlayMetric label="Distance" value={resolvedDistanceKm ? `${resolvedDistanceKm.toLocaleString()} KM` : "--"} />
-              <OverlayMetric label="Signal" value="STABLE" />
+              <OverlayMetric label="Altitude" value={telemetry.altitudeLabel} />
+              <OverlayMetric label="Fuel" value={telemetry.fuelLabel} />
               <OverlayMetric label="Distractions" value={String(distractionsCount)} />
             </div>
             <div className="h-[1px] w-48 bg-gradient-to-l from-primary/40 to-transparent"></div>
@@ -240,9 +258,9 @@ export default function ActiveFlight(): JSX.Element {
       </main>
 
       <footer className="fixed bottom-0 w-full z-50 h-10 border-t border-primary/5 bg-background flex justify-around items-center px-12">
-        <FooterTelemetryItem icon="height" label="ALT: 60K" />
-        <FooterTelemetryItem icon="speed" label="SPD: MACH 2" />
-        <FooterTelemetryItem icon="water_drop" label="FUEL: 88%" />
+        <FooterTelemetryItem icon="height" label={`ALT: ${telemetry.altitudeLabel.replace(" FT", "")}`} />
+        <FooterTelemetryItem icon="speed" label={`SPD: ${telemetry.speedLabel}`} />
+        <FooterTelemetryItem icon="water_drop" label={`FUEL: ${telemetry.fuelLabel}`} />
         <FooterTelemetryItem icon="radar" label={`SIG: ${distractionsCount > 0 ? "ACTIVE" : "STABLE"}`} active />
       </footer>
 
