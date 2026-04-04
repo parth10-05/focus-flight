@@ -116,18 +116,19 @@ export default function ActiveFlight(): JSX.Element {
   const resolvedDistanceKm = distanceKm ?? presetRouteMatch?.distanceKm ?? null;
 
   const telemetry = useMemo(() => {
-    const phase = elapsedMs / 1000;
+    const telemetryElapsedMs = Math.floor(elapsedMs / 10000) * 10000;
+    const phaseMinutes = telemetryElapsedMs / 60000;
 
     const altitudeFt = Math.max(
       30000,
-      Math.round(59000 + Math.sin(phase / 18) * 1300 + Math.cos(phase / 9) * 650)
+      Math.round((59000 + Math.sin(phaseMinutes / 6) * 180 + Math.cos(phaseMinutes / 11) * 90) / 10) * 10
     );
 
-    const speedMach = Math.max(0.72, 1.85 + Math.sin(phase / 20) * 0.22);
+    const speedMach = Math.max(0.72, 1.84 + Math.sin(phaseMinutes / 8) * 0.05);
 
     const missionSeconds = currentFlight?.duration ?? 0;
-    const progress = missionSeconds > 0 ? Math.min(1, (elapsedMs / 1000) / missionSeconds) : 0;
-    const fuelPct = Math.max(5, Math.min(100, 100 - progress * 88 + Math.sin(phase / 16) * 1.2));
+    const progress = missionSeconds > 0 ? Math.min(1, (telemetryElapsedMs / 1000) / missionSeconds) : 0;
+    const fuelPct = Math.max(5, Math.min(100, 100 - progress * 88 + Math.sin(phaseMinutes / 10) * 0.4));
 
     return {
       altitudeLabel: `${altitudeFt.toLocaleString()} FT`,
