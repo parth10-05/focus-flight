@@ -26,4 +26,6 @@ export interface FlightConfig {
   destination: string;
   duration: number;
   blockedSites: string[];
+  aircraftType?: string;
+  distanceKm?: number;
 }

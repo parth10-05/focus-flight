@@ -27,6 +27,8 @@ export default function ActiveFlight(): JSX.Element {
 
   const currentFlight = useFlightStore((state) => state.currentFlight);
   const blockedSites = useFlightStore((state) => state.blockedSites);
+  const aircraftType = useFlightStore((state) => state.aircraftType);
+  const distanceKm = useFlightStore((state) => state.distanceKm);
   const syncWithBackend = useFlightStore((state) => state.syncWithBackend);
   const endFlight = useFlightStore((state) => state.endFlight);
 
@@ -184,8 +186,8 @@ export default function ActiveFlight(): JSX.Element {
         <div className="absolute bottom-16 right-16 z-20">
           <div className="flex flex-col gap-8 items-end">
             <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-              <OverlayMetric label="Altitude" value="60,000 FT" />
-              <OverlayMetric label="Speed" value="MACH 2" />
+              <OverlayMetric label="Aircraft" value={aircraftType ?? "UNSPECIFIED"} />
+              <OverlayMetric label="Distance" value={distanceKm ? `${distanceKm.toLocaleString()} KM` : "--"} />
               <OverlayMetric label="Signal" value="STABLE" />
               <OverlayMetric label="Distractions" value={String(distractionsCount)} />
             </div>

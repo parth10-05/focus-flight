@@ -12,6 +12,8 @@ interface FlightStore {
   currentFlight: Flight | null;
   isActive: boolean;
   blockedSites: string[];
+  aircraftType: string | null;
+  distanceKm: number | null;
   startFlight: (config: FlightConfig) => Promise<Flight>;
   endFlight: (status: "completed" | "aborted") => Promise<void>;
   syncWithBackend: (userId?: string) => Promise<void>;
@@ -22,6 +24,8 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   currentFlight: null,
   isActive: false,
   blockedSites: [],
+  aircraftType: null,
+  distanceKm: null,
   startFlight: async (config: FlightConfig): Promise<Flight> => {
     const activeFlight = await getActiveFlight();
     if (activeFlight) {
@@ -32,7 +36,9 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     set({
       currentFlight: flight,
       isActive: true,
-      blockedSites: config.blockedSites
+      blockedSites: config.blockedSites,
+      aircraftType: config.aircraftType ?? null,
+      distanceKm: config.distanceKm ?? null
     });
     return flight;
   },
@@ -47,7 +53,9 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     set({
       currentFlight: null,
       isActive: false,
-      blockedSites: []
+      blockedSites: [],
+      aircraftType: null,
+      distanceKm: null
     });
   },
   syncWithBackend: async (_userId?: string): Promise<void> => {
@@ -56,7 +64,9 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
       set({
         currentFlight: null,
         isActive: false,
-        blockedSites: []
+        blockedSites: [],
+        aircraftType: null,
+        distanceKm: null
       });
       return;
     }
@@ -73,14 +83,18 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     set({
       currentFlight: activeFlight,
       isActive: true,
-      blockedSites: (blockedRows ?? []).map((row: { domain: string }) => row.domain)
+      blockedSites: (blockedRows ?? []).map((row: { domain: string }) => row.domain),
+      aircraftType: get().aircraftType,
+      distanceKm: get().distanceKm
     });
   },
   reset: () => {
     set({
       currentFlight: null,
       isActive: false,
-      blockedSites: []
+      blockedSites: [],
+      aircraftType: null,
+      distanceKm: null
     });
   }
 }));

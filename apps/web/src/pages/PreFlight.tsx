@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 import BlockedSectorChip from "@/components/preflight/BlockedSectorChip";
 import FooterMetric from "@/components/preflight/FooterMetric";
+import { RouteSelector } from "@/components/preflight/RouteSelector";
 import TelemetryTile from "@/components/preflight/TelemetryTile";
+import type { PresetRoute } from "@/data/flightRoutes";
+import { PRESET_ROUTES } from "@/data/flightRoutes";
 import "@/components/preflight/preflight.css";
 import { getActiveFlight } from "@/services/flightService";
 import { useFlightStore } from "@/store/useFlightStore";
@@ -32,14 +35,25 @@ export default function PreFlight(): JSX.Element {
 
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState(120);
-  const [blockedSites, setBlockedSites] = useState<string[]>([
-    
-  ]);
+  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
+  const [blockedSites, setBlockedSites] = useState<string[]>([]);
+  const [mode, setMode] = useState<"preset" | "custom">("preset");
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<PreFlightErrors>({});
 
-  const durationDisplay = useMemo(() => Math.max(1, Math.round(durationMinutes)), [durationMinutes]);
+  const durationDisplay = useMemo(() => {
+    if (durationMinutes === null) {
+      return null;
+    }
+
+    return Math.max(1, Math.round(durationMinutes));
+  }, [durationMinutes]);
+
+  const selectedRoute = useMemo(
+    () => PRESET_ROUTES.find((route) => route.id === selectedRouteId) ?? null,
+    [selectedRouteId]
+  );
 
   const addBlockedDomain = () => {
     const nextDomain = window.prompt("Enter domain to block");
@@ -59,6 +73,24 @@ export default function PreFlight(): JSX.Element {
     setBlockedSites((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
+  const handleRouteSelect = (route: PresetRoute) => {
+    setSelectedRouteId(route.id);
+    setOrigin(route.origin);
+    setDestination(route.destination);
+    setDurationMinutes(route.durationMinutes);
+  };
+
+  const handleModeSwitch = (newMode: "preset" | "custom") => {
+    setMode(newMode);
+
+    if (newMode === "custom") {
+      setSelectedRouteId(null);
+      setOrigin("");
+      setDestination("");
+      setDurationMinutes(null);
+    }
+  };
+
   const validate = (): boolean => {
     const nextErrors: PreFlightErrors = {};
 
@@ -70,7 +102,7 @@ export default function PreFlight(): JSX.Element {
       nextErrors.destination = "Arrival Destination is required";
     }
 
-    if (!durationDisplay || durationDisplay <= 0) {
+    if (durationMinutes === null || durationMinutes <= 0) {
       nextErrors.duration = "Flight Duration is required";
     }
 
@@ -84,6 +116,11 @@ export default function PreFlight(): JSX.Element {
       return;
     }
 
+    if (durationDisplay === null) {
+      setErrors({ duration: "Flight Duration is required" });
+      return;
+    }
+
     setIsSubmitting(true);
     setErrors({});
 
@@ -92,7 +129,9 @@ export default function PreFlight(): JSX.Element {
         origin: origin.trim(),
         destination: destination.trim(),
         duration: durationDisplay * 60,
-        blockedSites
+        blockedSites,
+        aircraftType: selectedRoute?.aircraft,
+        distanceKm: selectedRoute?.distanceKm
       });
 
       navigate(`/flight/${flight.id}`);
@@ -126,6 +165,61 @@ export default function PreFlight(): JSX.Element {
           <form className="w-full grid grid-cols-12 gap-8" onSubmit={handleSubmit}>
             <section className="col-span-12 bg-surface-container-low p-10 border-l border-primary/20 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 font-mono text-[10px] text-primary/20 tracking-tighter">COORD_SYS: ST-04</div>
+
+              <div style={{ display: "flex", gap: "0", marginBottom: "24px" }}>
+                <button
+                  type="button"
+                  onClick={() => handleModeSwitch("preset")}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "11px",
+                    letterSpacing: "0.1em",
+                    padding: "8px 20px",
+                    background: mode === "preset" ? "var(--color-accent-blue)" : "var(--color-elevated)",
+                    color: mode === "preset" ? "var(--color-base)" : "var(--color-text-muted)",
+                    border: "none",
+                    borderRadius: "var(--radius-small) 0 0 var(--radius-small)",
+                    cursor: "pointer"
+                  }}
+                >
+                  PRESET ROUTES
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleModeSwitch("custom")}
+                  style={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "11px",
+                    letterSpacing: "0.1em",
+                    padding: "8px 20px",
+                    background: mode === "custom" ? "var(--color-accent-blue)" : "var(--color-elevated)",
+                    color: mode === "custom" ? "var(--color-base)" : "var(--color-text-muted)",
+                    border: "none",
+                    borderRadius: "0 var(--radius-small) var(--radius-small) 0",
+                    cursor: "pointer"
+                  }}
+                >
+                  CUSTOM MISSION
+                </button>
+              </div>
+
+              {mode === "preset" ? (
+                <div style={{ marginBottom: "28px" }}>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "10px",
+                      letterSpacing: "0.12em",
+                      color: "var(--color-text-muted)",
+                      marginBottom: "12px"
+                    }}
+                  >
+                    SELECT ROUTE // AUTO-FILLS MISSION PARAMETERS
+                  </div>
+                  <RouteSelector onSelect={handleRouteSelect} selectedId={selectedRouteId} />
+                </div>
+              ) : null}
+
               <div className="grid grid-cols-2 gap-12">
                 <div className="space-y-8">
                   <div className="group">
@@ -156,7 +250,7 @@ export default function PreFlight(): JSX.Element {
                   <div>
                     <label className="block font-label text-[10px] text-secondary tracking-[0.15em] uppercase mb-4">Flight Duration (MIN)</label>
                     <div className="flex items-end gap-4 mb-2">
-                      <span className="font-mono text-4xl text-primary font-light">{durationDisplay}</span>
+                      <span className="font-mono text-4xl text-primary font-light">{durationDisplay ?? "--"}</span>
                       <span className="font-mono text-xs text-secondary pb-1">T-MINUS</span>
                     </div>
                     <input
@@ -164,7 +258,7 @@ export default function PreFlight(): JSX.Element {
                       max={240}
                       min={15}
                       type="range"
-                      value={durationDisplay}
+                      value={durationDisplay ?? 15}
                       onChange={(event) => setDurationMinutes(Number(event.target.value))}
                     />
                     {errors.duration ? <p className="mt-2 font-mono text-[10px] text-error">{errors.duration}</p> : null}
