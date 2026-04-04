@@ -20,6 +20,14 @@ export async function createFlight(config) {
         if (flightError || !flight) {
             throw new Error(flightError?.message ?? "Failed to create flight");
         }
+        const { error: sessionLogInitError } = await supabase.from("sessions_log").insert({
+            flight_id: flight.id,
+            actual_duration: null,
+            distractions_blocked_count: 0
+        });
+        if (sessionLogInitError) {
+            throw new Error(`Flight created but session log init failed: ${sessionLogInitError.message}`);
+        }
         if (config.blockedSites.length > 0) {
             const blockedRows = config.blockedSites.map((domain) => ({
                 flight_id: flight.id,
@@ -84,12 +92,33 @@ export async function completeFlight(flightId, status) {
         if (updateError) {
             throw new Error(`Failed to complete flight: ${updateError.message}`);
         }
-        const { error: sessionLogError } = await supabase.from("sessions_log").insert({
+        const { data: existingSessionLog, error: sessionLogFetchError } = await supabase
+            .from("sessions_log")
+            .select("id")
+            .eq("flight_id", flightId)
+            .order("id", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        if (sessionLogFetchError) {
+            throw new Error(`Flight updated but failed to read session log: ${sessionLogFetchError.message}`);
+        }
+        if (existingSessionLog?.id) {
+            const { error: sessionLogUpdateError } = await supabase
+                .from("sessions_log")
+                .update({ actual_duration: actualDurationMinutes })
+                .eq("id", existingSessionLog.id);
+            if (sessionLogUpdateError) {
+                throw new Error(`Flight updated but session log update failed: ${sessionLogUpdateError.message}`);
+            }
+            return;
+        }
+        const { error: sessionLogInsertError } = await supabase.from("sessions_log").insert({
             flight_id: flightId,
-            actual_duration: actualDurationMinutes
+            actual_duration: actualDurationMinutes,
+            distractions_blocked_count: 0
         });
-        if (sessionLogError) {
-            throw new Error(`Flight updated but session log creation failed: ${sessionLogError.message}`);
+        if (sessionLogInsertError) {
+            throw new Error(`Flight updated but session log creation failed: ${sessionLogInsertError.message}`);
         }
     }
     catch (error) {

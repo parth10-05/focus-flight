@@ -277,6 +277,46 @@ async function incrementDistractions(flightId, accessToken) {
       return;
     }
 
+    const sessionCheckResponse = await fetch(
+      `${config.url}/rest/v1/sessions_log?flight_id=eq.${encodeURIComponent(flightId)}&select=id&limit=1`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          apikey: config.anonKey,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (sessionCheckResponse.status === 401) {
+      await handleSessionExpired();
+      return;
+    }
+
+    if (sessionCheckResponse.ok) {
+      const existingRows = await sessionCheckResponse.json();
+      if (!Array.isArray(existingRows) || existingRows.length === 0) {
+        const sessionInsertResponse = await fetch(`${config.url}/rest/v1/sessions_log`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            apikey: config.anonKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            flight_id: flightId,
+            actual_duration: null,
+            distractions_blocked_count: 0
+          })
+        });
+
+        if (sessionInsertResponse.status === 401) {
+          await handleSessionExpired();
+          return;
+        }
+      }
+    }
+
     const response = await fetch(`${config.url}/rest/v1/rpc/increment_distractions`, {
       method: 'POST',
       headers: {
