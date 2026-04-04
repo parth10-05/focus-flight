@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BLOCKED SITE - Flight Mode</title>
+    <link rel="stylesheet" href="blocked.css" />
+</head>
+<body>
+    <div class="bg-layer"></div>
+
+    <header class="status-bar">
+        <div class="status-left">
+            <span class="dot"></span>
+            <span class="status-label">BLOCKED SITE</span>
+        </div>
+        <div class="status-right">
+            <span class="status-caption">Signal Status</span>
+            <span class="status-value">VANGUARD-01_ENCRYPTED</span>
+        </div>
+    </header>
+
+    <main class="blocked-main">
+        <aside class="telemetry-panel">
+            <div>
+                <p class="telemetry-label">COORDINATES</p>
+                <p class="telemetry-value">40.7128° N, 74.0060° W</p>
+            </div>
+            <div>
+                <p class="telemetry-label">ALTITUDE</p>
+                <p class="telemetry-value">FL600 // STEADY</p>
+            </div>
+            <div>
+                <p class="telemetry-label">PROTOCOL</p>
+                <p class="telemetry-value">VOID_SILENCE_INIT</p>
+            </div>
+        </aside>
+
+        <section class="blocked-content">
+            <div class="icon-wrap">✈</div>
+
+            <div class="copy-wrap">
+                <h1>YOU'RE MID-FLIGHT</h1>
+                <p>This route has no layovers.</p>
+                <div id="blocked-domain" class="blocked-domain">blocked destination</div>
+            </div>
+
+            <div class="timer-wrap">
+                <div class="timer-label">REMAINING AIRTIME</div>
+                <div id="remaining-time" class="timer-value">00:00:00</div>
+            </div>
+
+            <div class="actions">
+                <button id="return-flight-btn" class="primary" type="button">RETURN TO FLIGHT</button>
+                <button id="abort-flight-btn" class="secondary" type="button">ABORT FLIGHT</button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="blocked-footer">
+        <span>AUTOPILOT_ENGAGED</span>
+        <span>DISTRACTION_SHIELD_ACTIVE</span>
+    </footer>
+
+    <script src="blocked.js"></script>
+</body>
+</html>

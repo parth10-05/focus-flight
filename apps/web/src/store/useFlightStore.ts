@@ -15,6 +15,7 @@ interface FlightStore {
   startFlight: (config: FlightConfig) => Promise<Flight>;
   endFlight: (status: "completed" | "aborted") => Promise<void>;
   syncWithBackend: (userId?: string) => Promise<void>;
+  reset: () => void;
 }
 
 export const useFlightStore = create<FlightStore>((set, get) => ({
@@ -22,6 +23,11 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   isActive: false,
   blockedSites: [],
   startFlight: async (config: FlightConfig): Promise<Flight> => {
+    const activeFlight = await getActiveFlight();
+    if (activeFlight) {
+      throw new Error(`ACTIVE_FLIGHT_EXISTS:${activeFlight.id}`);
+    }
+
     const flight = await createFlight(config);
     set({
       currentFlight: flight,
@@ -68,6 +74,13 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
       currentFlight: activeFlight,
       isActive: true,
       blockedSites: (blockedRows ?? []).map((row: { domain: string }) => row.domain)
+    });
+  },
+  reset: () => {
+    set({
+      currentFlight: null,
+      isActive: false,
+      blockedSites: []
     });
   }
 }));

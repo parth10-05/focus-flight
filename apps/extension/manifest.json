@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "AeroFocus",
+  "version": "1.0.0",
+  "permissions": ["storage", "tabs", "scripting", "declarativeNetRequest"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html" },
+  "declarative_net_request": { "rule_resources": [] },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:5173/*",
+        "http://localhost/*"
+      ],
+      "js": ["bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "http://localhost:5173/*",
+      "http://localhost/*",
+      "https://YOUR_PRODUCTION_DOMAIN/*"
+    ]
+  }
+}

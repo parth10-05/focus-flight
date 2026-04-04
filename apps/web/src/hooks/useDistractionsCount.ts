@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 
+// Returns live distractions_blocked_count for the current flight
+// Subscribes to Supabase Realtime on sessions_log for the given flightId
+// Returns 0 while loading or if no session_log row exists yet
 export function useDistractionsCount(flightId: string | null): number {
   const [count, setCount] = useState(0);
 

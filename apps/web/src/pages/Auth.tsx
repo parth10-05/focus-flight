@@ -1,32 +1,81 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { sendToExtension } from "@/lib/extensionBridge";
 import { supabase } from "@/lib/supabase";
-
-declare const chrome: {
-  storage?: {
-    local?: {
-      set: (items: Record<string, unknown>, callback?: () => void) => void;
-    };
-  };
-};
 
 export default function Auth(): JSX.Element {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const saveSessionToChromeStorage = (accessToken: string | undefined) => {
-    if (!accessToken) {
+  const resolvePostAuthRoute = async (userId: string): Promise<string> => {
+    const { data, error } = await supabase
+      .from("flights")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("start_time", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Failed to resolve active flight for redirect", error.message);
+      return "/preflight";
+    }
+
+    if (data?.id) {
+      return `/flight/${data.id}`;
+    }
+
+    return "/preflight";
+  };
+
+  useEffect(() => {
+    const redirectIfAuthenticated = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.user?.id) {
+        return;
+      }
+
+      const redirectPath = await resolvePostAuthRoute(data.session.user.id);
+      navigate(redirectPath, { replace: true });
+    };
+
+    void redirectIfAuthenticated();
+  }, [navigate]);
+
+  const sendSessionToExtension = (
+    session:
+      | {
+          access_token: string;
+          refresh_token: string;
+          user: { id: string };
+        }
+      | null
+      | undefined
+  ) => {
+    if (!session) {
       return;
     }
 
-    if (typeof chrome !== "undefined" && chrome.storage?.local?.set) {
-      chrome.storage.local.set({ supabaseSessionToken: accessToken });
-    }
+    console.log("[AeroFocus Web] Login success, sending session to extension:", session.user.id);
+    sendToExtension({
+      type: "SET_SESSION",
+      payload: {
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        user_id: session.user.id
+      }
+    });
+  };
+
+  const clearSessionInExtension = () => {
+    sendToExtension({ type: "CLEAR_SESSION" });
   };
 
   const handleLogin = async (event: FormEvent) => {
@@ -45,8 +94,9 @@ export default function Auth(): JSX.Element {
         throw new Error(error.message);
       }
 
-      saveSessionToChromeStorage(data.session?.access_token);
-      navigate("/preflight");
+      sendSessionToExtension(data.session);
+      const redirectPath = await resolvePostAuthRoute(data.session.user.id);
+      navigate(redirectPath, { replace: true });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Login failed");
     } finally {
@@ -54,7 +104,8 @@ export default function Auth(): JSX.Element {
     }
   };
 
-  const handleSignup = async () => {
+  const handleSignup = async (event: FormEvent) => {
+    event.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
     setNoticeMessage(null);
@@ -69,10 +120,37 @@ export default function Auth(): JSX.Element {
         throw new Error(error.message);
       }
 
-      saveSessionToChromeStorage(data.session?.access_token);
+      sendSessionToExtension(data.session);
+
+      if (data.session?.user?.id) {
+        const redirectPath = await resolvePostAuthRoute(data.session.user.id);
+        navigate(redirectPath, { replace: true });
+        return;
+      }
+
       setNoticeMessage("Signup request submitted. Check your email if confirmation is enabled.");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Signup failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    setNoticeMessage(null);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      clearSessionInExtension();
+      setNoticeMessage("Logged out successfully.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Logout failed");
     } finally {
       setIsLoading(false);
     }
@@ -98,12 +176,29 @@ export default function Auth(): JSX.Element {
         </div>
 
         <div className="max-w-3xl bg-[#1d2022]/70 backdrop-blur-[16px] rounded-small pl-8 pr-4 py-10">
+          <div className="mb-6 inline-flex rounded-small border border-[#45484b]/30 overflow-hidden">
+            <button
+              type="button"
+              className={`px-5 py-2 font-mono text-[10px] tracking-[0.2em] uppercase transition-all duration-150 ${mode === "login" ? "bg-[#c1c7ce] text-[#3b4147]" : "text-[#c1c7ce] hover:bg-[#c1c7ce]/[0.02]"}`}
+              onClick={() => setMode("login")}
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              className={`px-5 py-2 font-mono text-[10px] tracking-[0.2em] uppercase transition-all duration-150 ${mode === "signup" ? "bg-[#c1c7ce] text-[#3b4147]" : "text-[#c1c7ce] hover:bg-[#c1c7ce]/[0.02]"}`}
+              onClick={() => setMode("signup")}
+            >
+              Sign Up
+            </button>
+          </div>
+
           <div className="mb-8 grid gap-2">
             <span className="font-mono text-[10px] tracking-[0.28em] uppercase text-[#939eb4]">Access Channel</span>
             <span className="font-mono text-xs text-[#a9abaf]">SECURE_AUTH_PIPELINE_01</span>
           </div>
 
-          <form className="grid gap-8" onSubmit={handleLogin}>
+          <form className="grid gap-8" onSubmit={mode === "login" ? handleLogin : handleSignup}>
             <div className="grid gap-2">
               <label
                 className="text-[#939eb4] text-[11px] tracking-[0.16em] uppercase"
@@ -150,15 +245,15 @@ export default function Auth(): JSX.Element {
                 disabled={isLoading}
                 className="px-6 py-3 rounded-small bg-[#c1c7ce] text-[#3b4147] font-mono text-[11px] tracking-[0.2em] uppercase transition-all duration-150 ease-linear disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Authenticating" : "Login"}
+                {isLoading ? "Authenticating" : mode === "login" ? "Login" : "Create Account"}
               </button>
               <button
                 type="button"
-                onClick={handleSignup}
+                onClick={() => void handleLogout()}
                 disabled={isLoading}
                 className="px-6 py-3 rounded-small border border-[#45484b]/20 text-[#c1c7ce] font-mono text-[11px] tracking-[0.2em] uppercase transition-all duration-150 ease-linear hover:bg-[#c1c7ce]/[0.02] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Sign Up
+                Logout
               </button>
             </div>
           </form>

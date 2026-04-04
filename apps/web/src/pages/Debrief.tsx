@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import StatusBadge from "@/components/shared/StatusBadge";
 import { supabase } from "@/lib/supabase";
@@ -36,13 +36,16 @@ export default function Debrief(): JSX.Element {
 
   const [flight, setFlight] = useState<FlightRow | null>(null);
   const [sessionLog, setSessionLog] = useState<SessionRow | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!flightId) {
+      setIsLoading(false);
       return;
     }
 
     const load = async () => {
+      setIsLoading(true);
       const [{ data: flightData, error: flightError }, { data: sessionData, error: sessionError }] = await Promise.all([
         supabase.from("flights").select("id, origin, destination, start_time, status").eq("id", flightId).maybeSingle(),
         supabase
@@ -63,10 +66,19 @@ export default function Debrief(): JSX.Element {
 
       setFlight((flightData as FlightRow | null) ?? null);
       setSessionLog((sessionData as SessionRow | null) ?? null);
+      setIsLoading(false);
     };
 
     void load();
   }, [flightId]);
+
+  if (!flightId) {
+    return <Navigate to="/logbook" replace />;
+  }
+
+  if (!isLoading && !flight) {
+    return <Navigate to="/logbook" replace />;
+  }
 
   const route = useMemo(() => {
     if (!flight) {
@@ -89,10 +101,10 @@ export default function Debrief(): JSX.Element {
       <header className="bg-[#0d0e0f]/70 backdrop-blur-lg text-slate-300 font-light tracking-[0.1em] uppercase border-b border-white/10 flex justify-between items-center w-full px-8 py-4 z-40">
         <div className="text-xl font-light tracking-[0.2em] text-slate-200">SILENCE_OPS</div>
         <nav className="hidden md:flex gap-8">
-          <span className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer">Mission</span>
-          <span className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer">Telemetry</span>
+          <button className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer bg-transparent border-0 p-0" onClick={() => navigate("/preflight")} type="button">Mission</button>
+          <button className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer bg-transparent border-0 p-0" onClick={() => navigate("/analytics")} type="button">Telemetry</button>
           <span className="text-slate-100 font-medium cursor-default">Log</span>
-          <span className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer">Archive</span>
+          <button className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer bg-transparent border-0 p-0" onClick={() => navigate("/logbook")} type="button">Archive</button>
         </nav>
         <div className="flex gap-4">
           <span className="material-symbols-outlined text-slate-500 hover:text-slate-100 cursor-pointer">settings</span>
@@ -172,6 +184,12 @@ export default function Debrief(): JSX.Element {
               onClick={() => navigate("/logbook")}
             >
               <span className="relative z-10">VIEW LOGBOOK</span>
+            </button>
+            <button
+              className="group relative px-12 py-4 bg-surface-container-low text-primary font-label font-medium tracking-[0.3em] uppercase rounded-lg overflow-hidden transition-all duration-300 hover:bg-surface-container"
+              onClick={() => navigate("/analytics")}
+            >
+              <span className="relative z-10">ANALYTICS</span>
             </button>
           </div>
         </div>

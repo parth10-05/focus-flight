@@ -1,0 +1,105 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  width: 350px;
+  min-height: 420px;
+  background: #0d0e0f;
+  color: #e3e5e9;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid #2a2d31;
+  background: #0d0e0f;
+}
+
+.brand {
+  letter-spacing: 0.16em;
+  color: #c1c7ce;
+  font-size: 14px;
+}
+
+.container {
+  padding: 18px 16px 20px;
+}
+
+.timer-panel {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.ring-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #2e3237;
+}
+
+.timer-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.elapsed {
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 34px;
+  color: #c1c7ce;
+  letter-spacing: 0.04em;
+}
+
+.status {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #939eb4;
+  text-transform: uppercase;
+}
+
+.actions {
+  display: grid;
+  gap: 10px;
+}
+
+.primary-btn {
+  width: 100%;
+  border: none;
+  border-radius: 2px;
+  background: #c1c7ce;
+  color: #3b4147;
+  padding: 12px 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.primary-btn:hover {
+  background: #d3d8df;
+}
+
+.subtle {
+  text-align: center;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 10px;
+  color: #737679;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}

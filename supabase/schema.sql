@@ -20,3 +20,10 @@ create table sessions_log (
   actual_duration int,
   distractions_blocked_count int default 0
 );
+
+create or replace function increment_distractions(flight_id uuid)
+returns void language sql security definer as $$
+  update sessions_log
+  set distractions_blocked_count = distractions_blocked_count + 1
+  where sessions_log.flight_id = increment_distractions.flight_id;
+$$;

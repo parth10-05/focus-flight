@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import MonoStatRow from "@/components/shared/MonoStatRow";
 import { supabase } from "@/lib/supabase";
@@ -14,6 +15,7 @@ type BlockedSite = {
 };
 
 export default function Analytics(): JSX.Element {
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionMetric[]>([]);
   const [domains, setDomains] = useState<BlockedSite[]>([]);
 
@@ -54,12 +56,11 @@ export default function Analytics(): JSX.Element {
     <div className="bg-background text-on-surface font-body overflow-x-hidden min-h-screen">
       <header className="fixed top-0 w-full bg-[#0d0e0f]/70 backdrop-blur-lg border-b border-white/10 z-50">
         <div className="flex justify-between items-center px-12 h-16 w-full">
-          <div className="text-xl font-light tracking-[0.2em] text-slate-100 font-headline">Stratospheric Silence</div>
+          <div className="text-xl font-light tracking-[0.2em] text-slate-100 font-headline">Flight Mode</div>
           <nav className="hidden md:flex space-x-12">
-            <a className="text-slate-500 font-sans font-light tracking-widest uppercase text-xs hover:text-slate-100 transition-colors duration-150" href="#">Telemetry</a>
-            <a className="text-slate-100 border-b border-slate-100 pb-1 font-sans font-light tracking-widest uppercase text-xs" href="#">Analysis</a>
-            <a className="text-slate-500 font-sans font-light tracking-widest uppercase text-xs hover:text-slate-100 transition-colors duration-150" href="#">Orbits</a>
-            <a className="text-slate-500 font-sans font-light tracking-widest uppercase text-xs hover:text-slate-100 transition-colors duration-150" href="#">Logs</a>
+            <button className="text-slate-500 font-sans font-light tracking-widest uppercase text-xs hover:text-slate-100 transition-colors duration-150 bg-transparent border-0 p-0" onClick={() => navigate("/preflight")} type="button">Hangar</button>
+            <button className="text-slate-500 font-sans font-light tracking-widest uppercase text-xs hover:text-slate-100 transition-colors duration-150 bg-transparent border-0 p-0" onClick={() => navigate("/logbook")} type="button">Logbook</button>
+            <span className="text-slate-100 border-b border-slate-100 pb-1 font-sans font-light tracking-widest uppercase text-xs">Analytics</span>
           </nav>
           <div className="flex items-center space-x-6 text-slate-200">
             <span className="material-symbols-outlined cursor-pointer hover:text-slate-100">settings</span>
@@ -70,15 +71,14 @@ export default function Analytics(): JSX.Element {
 
       <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-[#0d0e0f] border-r border-white/5 flex flex-col py-8 z-40 hidden md:flex">
         <div className="px-8 mb-10">
-          <div className="text-lg font-light text-slate-100 font-headline">Vanguard One</div>
-          <div className="font-mono text-[10px] tracking-tighter text-slate-500 uppercase">Sector 7G</div>
+          <div className="font-mono text-[11px] tracking-widest text-secondary uppercase opacity-50">Command Center</div>
+          <div className="text-primary font-headline font-light tracking-[0.1em] text-lg">STRATOS</div>
+          <div className="font-mono text-[10px] text-secondary">Vanguard 01</div>
         </div>
         <nav className="flex-1 space-y-1">
-          <a className="flex items-center px-8 py-3 text-slate-500 font-mono text-xs tracking-tighter hover:bg-white/5 hover:text-slate-200 transition-colors duration-150" href="#"><span className="material-symbols-outlined mr-4">dashboard</span> Dashboard</a>
-          <a className="flex items-center px-8 py-3 bg-white/5 text-slate-100 border-l-2 border-slate-200 font-mono text-xs tracking-tighter transition-colors duration-150" href="#"><span className="material-symbols-outlined mr-4">analytics</span> Spectral</a>
-          <a className="flex items-center px-8 py-3 text-slate-500 font-mono text-xs tracking-tighter hover:bg-white/5 hover:text-slate-200 transition-colors duration-150" href="#"><span className="material-symbols-outlined mr-4">radar</span> Signal</a>
-          <a className="flex items-center px-8 py-3 text-slate-500 font-mono text-xs tracking-tighter hover:bg-white/5 hover:text-slate-200 transition-colors duration-150" href="#"><span className="material-symbols-outlined mr-4">brightness_2</span> Void</a>
-          <a className="flex items-center px-8 py-3 text-slate-500 font-mono text-xs tracking-tighter hover:bg-white/5 hover:text-slate-200 transition-colors duration-150" href="#"><span className="material-symbols-outlined mr-4">database</span> History</a>
+          <button className="w-full text-left flex items-center px-8 py-3 text-slate-500 font-mono text-xs tracking-tighter hover:bg-white/5 hover:text-slate-200 transition-colors duration-150 bg-transparent border-0" onClick={() => navigate("/preflight")} type="button"><span className="material-symbols-outlined mr-4">checklist</span> Pre-Flight</button>
+          <button className="w-full text-left flex items-center px-8 py-3 text-slate-500 font-mono text-xs tracking-tighter hover:bg-white/5 hover:text-slate-200 transition-colors duration-150 bg-transparent border-0" onClick={() => navigate("/logbook")} type="button"><span className="material-symbols-outlined mr-4">flight_takeoff</span> Active Duty</button>
+          <span className="flex items-center px-8 py-3 bg-white/5 text-slate-100 border-l-2 border-slate-200 font-mono text-xs tracking-tighter transition-colors duration-150"><span className="material-symbols-outlined mr-4">history_edu</span> Post-Flight</span>
         </nav>
       </aside>
 

@@ -1,4 +1,5 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 import BlockedSectorChip from "@/components/preflight/BlockedSectorChip";
@@ -7,6 +8,7 @@ import SideNavItem from "@/components/preflight/SideNavItem";
 import TelemetryTile from "@/components/preflight/TelemetryTile";
 import TopNavLink from "@/components/preflight/TopNavLink";
 import "@/components/preflight/preflight.css";
+import { getActiveFlight } from "@/services/flightService";
 import { useFlightStore } from "@/store/useFlightStore";
 
 interface PreFlightErrors {
@@ -20,13 +22,22 @@ export default function PreFlight(): JSX.Element {
   const navigate = useNavigate();
   const startFlight = useFlightStore((state) => state.startFlight);
 
+  useEffect(() => {
+    const redirectIfActiveFlightExists = async () => {
+      const activeFlight = await getActiveFlight();
+      if (activeFlight?.id) {
+        navigate(`/flight/${activeFlight.id}`, { replace: true });
+      }
+    };
+
+    void redirectIfActiveFlightExists();
+  }, [navigate]);
+
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(120);
   const [blockedSites, setBlockedSites] = useState<string[]>([
-    "SOCIAL_MEDIA",
-    "NEWS_TERMINAL",
-    "STREAM_FEED"
+    
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<PreFlightErrors>({});
@@ -89,6 +100,14 @@ export default function PreFlight(): JSX.Element {
 
       navigate(`/flight/${flight.id}`);
     } catch (error) {
+      if (error instanceof Error && error.message.startsWith("ACTIVE_FLIGHT_EXISTS:")) {
+        const [, activeFlightId] = error.message.split(":");
+        if (activeFlightId) {
+          navigate(`/flight/${activeFlightId}`, { replace: true });
+          return;
+        }
+      }
+
       setErrors({
         submit: error instanceof Error ? error.message : "Failed to start flight"
       });
@@ -100,11 +119,11 @@ export default function PreFlight(): JSX.Element {
   return (
     <div className="preflight-page bg-background text-on-background overflow-x-hidden">
       <nav className="fixed top-0 w-full z-50 bg-[#0d0e0f]/70 backdrop-blur-lg border-b border-[#c1c7ce]/10 flex justify-between items-center px-8 h-16 w-full">
-        <div className="text-xl font-light tracking-widest text-[#c1c7ce]">AeroFocus</div>
+        <Link to="/logbook" className="text-xl font-light tracking-widest text-[#c1c7ce]">AeroFocus</Link>
         <div className="hidden md:flex gap-8 items-center h-full">
-          <TopNavLink label="Hangar" active />
-          <TopNavLink label="Logbook" />
-          <TopNavLink label="Analytics" />
+          <TopNavLink label="Hangar" to="/preflight" active />
+          <TopNavLink label="Logbook" to="/logbook" />
+          <TopNavLink label="Analytics" to="/analytics" />
         </div>
         <div className="flex items-center gap-6">
           <span className="material-symbols-outlined text-[#c1c7ce] cursor-pointer">settings</span>
@@ -118,12 +137,12 @@ export default function PreFlight(): JSX.Element {
           <div className="text-[#939eb4] font-light tracking-wider text-[10px] uppercase">Vanguard-01</div>
         </div>
         <nav className="flex flex-col gap-2">
-          <SideNavItem icon="checklist" label="Pre-Flight" active />
-          <SideNavItem icon="flight_takeoff" label="Active Duty" />
-          <SideNavItem icon="history_edu" label="Post-Flight" />
+          <SideNavItem icon="checklist" label="Pre-Flight" to="/preflight" active />
+          <SideNavItem icon="flight_takeoff" label="Active Duty" to="/logbook" />
+          <SideNavItem icon="history_edu" label="Post-Flight" to="/logbook" />
         </nav>
         <div className="mt-auto p-2">
-          <button className="w-full py-3 bg-primary text-on-primary text-[10px] tracking-[0.2em] font-bold uppercase rounded-DEFAULT hover:bg-tertiary transition-colors" type="button">
+          <button className="w-full py-3 bg-primary text-on-primary text-[10px] tracking-[0.2em] font-bold uppercase rounded-DEFAULT hover:bg-tertiary transition-colors" type="button" onClick={() => navigate("/logbook") }>
             INITIATE PROTOCOL
           </button>
         </div>

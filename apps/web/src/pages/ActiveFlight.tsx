@@ -34,7 +34,7 @@ export default function ActiveFlight(): JSX.Element {
   const [actionError, setActionError] = useState<string | null>(null);
   const [isEnding, setIsEnding] = useState<"completed" | "aborted" | null>(null);
 
-  const distractionsCount = useDistractionsCount(currentFlight?.id ?? null);
+  const distractionsCount = useDistractionsCount(flightIdParam ?? currentFlight?.id ?? null);
   const elapsedMs = useElapsedTime(currentFlight?.start_time ?? null);
 
   useEffect(() => {

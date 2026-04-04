@@ -88,11 +88,11 @@ export default function Logbook(): JSX.Element {
   return (
     <div className="bg-background text-on-background selection:bg-primary selection:text-on-primary min-h-screen">
       <nav className="fixed top-0 w-full z-50 bg-[#0d0e0f] dark:bg-[#0d0e0f] opacity-70 backdrop-blur-lg border-b border-[#c1c7ce]/10 flex justify-between items-center px-8 h-16">
-        <div className="text-xl font-light tracking-[0.2em] text-[#c1c7ce]">Flight Mode</div>
+        <button className="text-xl font-light tracking-[0.2em] text-[#c1c7ce] bg-transparent border-0 p-0" onClick={() => navigate("/logbook")} type="button">Flight Mode</button>
         <div className="hidden md:flex gap-8 items-center h-full">
-          <a className="text-[#939eb4] font-light tracking-[0.1em] text-sm font-sans hover:text-[#e4ebff] transition-colors duration-150" href="#">Hangar</a>
-          <a className="text-[#c1c7ce] border-b-2 border-[#c1c7ce] pb-1 font-light tracking-[0.1em] text-sm font-sans" href="#">Logbook</a>
-          <a className="text-[#939eb4] font-light tracking-[0.1em] text-sm font-sans hover:text-[#e4ebff] transition-colors duration-150" href="#">Analytics</a>
+          <button className="text-[#939eb4] font-light tracking-[0.1em] text-sm font-sans hover:text-[#e4ebff] transition-colors duration-150 bg-transparent border-0 p-0" onClick={() => navigate("/preflight")} type="button">Hangar</button>
+          <span className="text-[#c1c7ce] border-b-2 border-[#c1c7ce] pb-1 font-light tracking-[0.1em] text-sm font-sans">Logbook</span>
+          <button className="text-[#939eb4] font-light tracking-[0.1em] text-sm font-sans hover:text-[#e4ebff] transition-colors duration-150 bg-transparent border-0 p-0" onClick={() => navigate("/analytics")} type="button">Analytics</button>
         </div>
         <div className="flex items-center gap-4">
           <span className="material-symbols-outlined text-[#c1c7ce] cursor-pointer hover:text-[#e4ebff] transition-all">settings</span>
@@ -107,9 +107,9 @@ export default function Logbook(): JSX.Element {
           <div className="font-mono text-[10px] text-secondary">Vanguard 01</div>
         </div>
         <div className="flex-1 space-y-1">
-          <a className="flex items-center gap-3 px-3 py-2 text-[#939eb4] hover:bg-[#c1c7ce]/5 transition-all duration-150 font-mono text-[11px] tracking-tight" href="#"><span className="material-symbols-outlined text-sm">flight_takeoff</span>Pre-Flight</a>
-          <a className="flex items-center gap-3 px-3 py-2 bg-[#c1c7ce]/10 text-[#c1c7ce] border-l-2 border-[#c1c7ce] font-mono text-[11px] tracking-tight" href="#"><span className="material-symbols-outlined text-sm">radar</span>Active Duty</a>
-          <a className="flex items-center gap-3 px-3 py-2 text-[#939eb4] hover:bg-[#c1c7ce]/5 transition-all duration-150 font-mono text-[11px] tracking-tight" href="#"><span className="material-symbols-outlined text-sm">flight_land</span>Post-Flight</a>
+          <button className="w-full text-left flex items-center gap-3 px-3 py-2 text-[#939eb4] hover:bg-[#c1c7ce]/5 transition-all duration-150 font-mono text-[11px] tracking-tight bg-transparent border-0" onClick={() => navigate("/preflight")} type="button"><span className="material-symbols-outlined text-sm">flight_takeoff</span>Pre-Flight</button>
+          <span className="flex items-center gap-3 px-3 py-2 bg-[#c1c7ce]/10 text-[#c1c7ce] border-l-2 border-[#c1c7ce] font-mono text-[11px] tracking-tight"><span className="material-symbols-outlined text-sm">radar</span>Active Duty</span>
+          <button className="w-full text-left flex items-center gap-3 px-3 py-2 text-[#939eb4] hover:bg-[#c1c7ce]/5 transition-all duration-150 font-mono text-[11px] tracking-tight bg-transparent border-0" onClick={() => navigate("/analytics")} type="button"><span className="material-symbols-outlined text-sm">flight_land</span>Post-Flight</button>
         </div>
       </aside>
 
@@ -163,7 +163,7 @@ export default function Logbook(): JSX.Element {
             </table>
           </div>
           <div className="p-6 bg-surface-container-lowest flex justify-center border-t border-outline-variant/10">
-            <button className="font-label text-[10px] tracking-[0.3em] text-primary hover:text-tertiary transition-all uppercase">Load Historical Archives</button>
+            <button className="font-label text-[10px] tracking-[0.3em] text-primary hover:text-tertiary transition-all uppercase disabled:opacity-50" disabled={!canNext} onClick={() => setPage((p) => p + 1)} type="button">Load Historical Archives</button>
           </div>
         </section>
       </main>

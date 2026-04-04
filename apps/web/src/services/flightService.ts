@@ -4,6 +4,11 @@ import type { Flight, FlightConfig } from "@/types";
 
 export async function createFlight(config: FlightConfig): Promise<Flight> {
   try {
+    const existingActiveFlight = await getActiveFlight();
+    if (existingActiveFlight) {
+      throw new Error(`ACTIVE_FLIGHT_EXISTS:${existingActiveFlight.id}`);
+    }
+
     const startTime = new Date().toISOString();
     const { data: flight, error: flightError } = await supabase
       .from("flights")

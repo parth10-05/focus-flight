@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AeroFocus</title>
+    <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">FLIGHT MODE</div>
+    </header>
+
+    <main class="container">
+        <section class="timer-panel">
+            <div class="ring-wrap">
+                <div class="ring"></div>
+                <div class="timer-content">
+                    <div id="elapsed-display" class="elapsed">00:00:00</div>
+                    <div id="status-display" class="status">No active flight</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="actions">
+            <button id="quick-flight-btn" class="primary-btn" type="button">BEGIN QUICK FLIGHT</button>
+            <div class="subtle">vanguard systems // operational</div>
+        </section>
+    </main>
+
+    <script src="popup.js"></script>
+</body>
+</html>
