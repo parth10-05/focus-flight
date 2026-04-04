@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import ActiveFlight from "@/pages/ActiveFlight";
 import Analytics from "@/pages/Analytics";
 import Auth from "@/pages/Auth";
+import { AppShell } from "@/components/layouts/AppShell";
 import Debrief from "@/pages/Debrief";
 import Logbook from "@/pages/Logbook";
 import PreFlight from "@/pages/PreFlight";
@@ -66,16 +67,6 @@ function RequireAuth({ children }: { children: JSX.Element }): JSX.Element {
   return children;
 }
 
-function RootRedirect(): JSX.Element {
-  const { isLoading, isAuthenticated } = useSessionState();
-
-  if (isLoading) {
-    return <div className="min-h-screen bg-[#0d0e0f]" />;
-  }
-
-  return <Navigate to={isAuthenticated ? "/preflight" : "/auth"} replace />;
-}
-
 export default function App(): JSX.Element {
   return (
     <BrowserRouter
@@ -85,13 +76,24 @@ export default function App(): JSX.Element {
       }}
     >
       <Routes>
-        <Route path="/" element={<RootRedirect />} />
         <Route path="/auth" element={<Auth />} />
+        <Route
+          path="/"
+          element={(
+            <RequireAuth>
+              <AppShell>
+                <Navigate to="/preflight" replace />
+              </AppShell>
+            </RequireAuth>
+          )}
+        />
         <Route
           path="/preflight"
           element={(
             <RequireAuth>
-              <PreFlight />
+              <AppShell>
+                <PreFlight />
+              </AppShell>
             </RequireAuth>
           )}
         />
@@ -99,7 +101,9 @@ export default function App(): JSX.Element {
           path="/flight/:id"
           element={(
             <RequireAuth>
-              <ActiveFlight />
+              <AppShell hideNav>
+                <ActiveFlight />
+              </AppShell>
             </RequireAuth>
           )}
         />
@@ -107,7 +111,9 @@ export default function App(): JSX.Element {
           path="/debrief/:id"
           element={(
             <RequireAuth>
-              <Debrief />
+              <AppShell>
+                <Debrief />
+              </AppShell>
             </RequireAuth>
           )}
         />
@@ -115,7 +121,9 @@ export default function App(): JSX.Element {
           path="/logbook"
           element={(
             <RequireAuth>
-              <Logbook />
+              <AppShell>
+                <Logbook />
+              </AppShell>
             </RequireAuth>
           )}
         />
@@ -123,11 +131,13 @@ export default function App(): JSX.Element {
           path="/analytics"
           element={(
             <RequireAuth>
-              <Analytics />
+              <AppShell>
+                <Analytics />
+              </AppShell>
             </RequireAuth>
           )}
         />
-        <Route path="*" element={<RootRedirect />} />
+        <Route path="*" element={<Navigate to="/logbook" replace />} />
       </Routes>
     </BrowserRouter>
   );

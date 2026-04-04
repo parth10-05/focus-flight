@@ -1,12 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 import BlockedSectorChip from "@/components/preflight/BlockedSectorChip";
 import FooterMetric from "@/components/preflight/FooterMetric";
-import SideNavItem from "@/components/preflight/SideNavItem";
 import TelemetryTile from "@/components/preflight/TelemetryTile";
-import TopNavLink from "@/components/preflight/TopNavLink";
 import "@/components/preflight/preflight.css";
 import { getActiveFlight } from "@/services/flightService";
 import { useFlightStore } from "@/store/useFlightStore";
@@ -117,38 +114,8 @@ export default function PreFlight(): JSX.Element {
   };
 
   return (
-    <div className="preflight-page bg-background text-on-background overflow-x-hidden">
-      <nav className="fixed top-0 w-full z-50 bg-[#0d0e0f]/70 backdrop-blur-lg border-b border-[#c1c7ce]/10 flex justify-between items-center px-8 h-16 w-full">
-        <Link to="/logbook" className="text-xl font-light tracking-widest text-[#c1c7ce]">AeroFocus</Link>
-        <div className="hidden md:flex gap-8 items-center h-full">
-          <TopNavLink label="Hangar" to="/preflight" active />
-          <TopNavLink label="Logbook" to="/logbook" />
-          <TopNavLink label="Analytics" to="/analytics" />
-        </div>
-        <div className="flex items-center gap-6">
-          <span className="material-symbols-outlined text-[#c1c7ce] cursor-pointer">settings</span>
-          <span className="material-symbols-outlined text-[#c1c7ce] cursor-pointer">account_circle</span>
-        </div>
-      </nav>
-
-      <aside className="fixed left-0 h-full w-64 pt-20 border-r border-[#c1c7ce]/10 bg-[#0d0e0f] flex flex-col gap-4 p-4">
-        <div className="mb-8 px-2">
-          <div className="text-[#c1c7ce] font-bold tracking-widest text-sm">MISSION CONTROL</div>
-          <div className="text-[#939eb4] font-light tracking-wider text-[10px] uppercase">Vanguard-01</div>
-        </div>
-        <nav className="flex flex-col gap-2">
-          <SideNavItem icon="checklist" label="Pre-Flight" to="/preflight" active />
-          <SideNavItem icon="flight_takeoff" label="Active Duty" to="/logbook" />
-          <SideNavItem icon="history_edu" label="Post-Flight" to="/logbook" />
-        </nav>
-        <div className="mt-auto p-2">
-          <button className="w-full py-3 bg-primary text-on-primary text-[10px] tracking-[0.2em] font-bold uppercase rounded-DEFAULT hover:bg-tertiary transition-colors" type="button" onClick={() => navigate("/logbook") }>
-            INITIATE PROTOCOL
-          </button>
-        </div>
-      </aside>
-
-      <main className="ml-64 pt-24 px-12 min-h-screen">
+    <div className="preflight-page text-on-background overflow-x-hidden">
+      <main className="px-12 py-10 min-h-screen">
         <div className="max-w-4xl mx-auto flex flex-col items-center">
           <header className="text-center mb-16">
             <h1 className="text-5xl font-light tracking-[0.2em] text-primary uppercase mb-4">Plan Your Flight</h1>
@@ -259,7 +226,7 @@ export default function PreFlight(): JSX.Element {
         </div>
       </main>
 
-      <footer className="ml-64 p-8 border-t border-outline-variant/10 flex justify-between items-center">
+      <footer className="p-8 border-t border-outline-variant/10 flex justify-between items-center">
         <div className="flex gap-12">
           <FooterMetric label="System Status" value="Nominal" withPulse />
           <FooterMetric label="Neural Load" value="0.04 MS" />

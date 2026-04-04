@@ -86,34 +86,8 @@ export default function Logbook(): JSX.Element {
   const canNext = useMemo(() => (page + 1) * 10 < count, [count, page]);
 
   return (
-    <div className="bg-background text-on-background selection:bg-primary selection:text-on-primary min-h-screen">
-      <nav className="fixed top-0 w-full z-50 bg-[#0d0e0f] dark:bg-[#0d0e0f] opacity-70 backdrop-blur-lg border-b border-[#c1c7ce]/10 flex justify-between items-center px-8 h-16">
-        <button className="text-xl font-light tracking-[0.2em] text-[#c1c7ce] bg-transparent border-0 p-0" onClick={() => navigate("/logbook")} type="button">Flight Mode</button>
-        <div className="hidden md:flex gap-8 items-center h-full">
-          <button className="text-[#939eb4] font-light tracking-[0.1em] text-sm font-sans hover:text-[#e4ebff] transition-colors duration-150 bg-transparent border-0 p-0" onClick={() => navigate("/preflight")} type="button">Hangar</button>
-          <span className="text-[#c1c7ce] border-b-2 border-[#c1c7ce] pb-1 font-light tracking-[0.1em] text-sm font-sans">Logbook</span>
-          <button className="text-[#939eb4] font-light tracking-[0.1em] text-sm font-sans hover:text-[#e4ebff] transition-colors duration-150 bg-transparent border-0 p-0" onClick={() => navigate("/analytics")} type="button">Analytics</button>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="material-symbols-outlined text-[#c1c7ce] cursor-pointer hover:text-[#e4ebff] transition-all">settings</span>
-          <span className="material-symbols-outlined text-[#c1c7ce] cursor-pointer hover:text-[#e4ebff] transition-all">account_circle</span>
-        </div>
-      </nav>
-
-      <aside className="fixed left-0 top-16 h-full w-64 border-r border-[#c1c7ce]/10 bg-[#0d0e0f] dark:bg-[#0d0e0f] opacity-70 backdrop-blur-xl flex flex-col py-6 px-4 hidden lg:flex">
-        <div className="mb-10 px-2">
-          <div className="font-mono text-[11px] tracking-widest text-secondary uppercase opacity-50">Command Center</div>
-          <div className="text-primary font-headline font-light tracking-[0.1em] text-lg">STRATOS</div>
-          <div className="font-mono text-[10px] text-secondary">Vanguard 01</div>
-        </div>
-        <div className="flex-1 space-y-1">
-          <button className="w-full text-left flex items-center gap-3 px-3 py-2 text-[#939eb4] hover:bg-[#c1c7ce]/5 transition-all duration-150 font-mono text-[11px] tracking-tight bg-transparent border-0" onClick={() => navigate("/preflight")} type="button"><span className="material-symbols-outlined text-sm">flight_takeoff</span>Pre-Flight</button>
-          <span className="flex items-center gap-3 px-3 py-2 bg-[#c1c7ce]/10 text-[#c1c7ce] border-l-2 border-[#c1c7ce] font-mono text-[11px] tracking-tight"><span className="material-symbols-outlined text-sm">radar</span>Active Duty</span>
-          <button className="w-full text-left flex items-center gap-3 px-3 py-2 text-[#939eb4] hover:bg-[#c1c7ce]/5 transition-all duration-150 font-mono text-[11px] tracking-tight bg-transparent border-0" onClick={() => navigate("/analytics")} type="button"><span className="material-symbols-outlined text-sm">flight_land</span>Post-Flight</button>
-        </div>
-      </aside>
-
-      <main className="lg:ml-64 pt-24 px-8 pb-12 min-h-screen">
+    <div className="text-on-background selection:bg-primary selection:text-on-primary">
+      <main className="px-8 py-10 pb-12 min-h-screen">
         <header className="mb-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ActiveFlight from "@/pages/ActiveFlight";
 import Analytics from "@/pages/Analytics";
 import Auth from "@/pages/Auth";
+import { AppShell } from "@/components/layouts/AppShell";
 import Debrief from "@/pages/Debrief";
 import Logbook from "@/pages/Logbook";
 import PreFlight from "@/pages/PreFlight";
@@ -46,16 +47,9 @@ function RequireAuth({ children }) {
     }
     return children;
 }
-function RootRedirect() {
-    const { isLoading, isAuthenticated } = useSessionState();
-    if (isLoading) {
-        return _jsx("div", { className: "min-h-screen bg-[#0d0e0f]" });
-    }
-    return _jsx(Navigate, { to: isAuthenticated ? "/preflight" : "/auth", replace: true });
-}
 export default function App() {
     return (_jsx(BrowserRouter, { future: {
             v7_startTransition: true,
             v7_relativeSplatPath: true
-        }, children: _jsxs(Routes, { children: [_jsx(Route, { path: "/", element: _jsx(RootRedirect, {}) }), _jsx(Route, { path: "/auth", element: _jsx(Auth, {}) }), _jsx(Route, { path: "/preflight", element: (_jsx(RequireAuth, { children: _jsx(PreFlight, {}) })) }), _jsx(Route, { path: "/flight/:id", element: (_jsx(RequireAuth, { children: _jsx(ActiveFlight, {}) })) }), _jsx(Route, { path: "/debrief/:id", element: (_jsx(RequireAuth, { children: _jsx(Debrief, {}) })) }), _jsx(Route, { path: "/logbook", element: (_jsx(RequireAuth, { children: _jsx(Logbook, {}) })) }), _jsx(Route, { path: "/analytics", element: (_jsx(RequireAuth, { children: _jsx(Analytics, {}) })) }), _jsx(Route, { path: "*", element: _jsx(RootRedirect, {}) })] }) }));
+        }, children: _jsxs(Routes, { children: [_jsx(Route, { path: "/auth", element: _jsx(Auth, {}) }), _jsx(Route, { path: "/", element: (_jsx(RequireAuth, { children: _jsx(AppShell, { children: _jsx(Navigate, { to: "/preflight", replace: true }) }) })) }), _jsx(Route, { path: "/preflight", element: (_jsx(RequireAuth, { children: _jsx(AppShell, { children: _jsx(PreFlight, {}) }) })) }), _jsx(Route, { path: "/flight/:id", element: (_jsx(RequireAuth, { children: _jsx(AppShell, { hideNav: true, children: _jsx(ActiveFlight, {}) }) })) }), _jsx(Route, { path: "/debrief/:id", element: (_jsx(RequireAuth, { children: _jsx(AppShell, { children: _jsx(Debrief, {}) }) })) }), _jsx(Route, { path: "/logbook", element: (_jsx(RequireAuth, { children: _jsx(AppShell, { children: _jsx(Logbook, {}) }) })) }), _jsx(Route, { path: "/analytics", element: (_jsx(RequireAuth, { children: _jsx(AppShell, { children: _jsx(Analytics, {}) }) })) }), _jsx(Route, { path: "*", element: _jsx(Navigate, { to: "/logbook", replace: true }) })] }) }));
 }

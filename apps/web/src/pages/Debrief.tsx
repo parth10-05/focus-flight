@@ -98,20 +98,6 @@ export default function Debrief(): JSX.Element {
     <div className="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary min-h-screen flex flex-col overflow-hidden">
       <div className="fixed inset-0 grain-overlay z-50"></div>
 
-      <header className="bg-[#0d0e0f]/70 backdrop-blur-lg text-slate-300 font-light tracking-[0.1em] uppercase border-b border-white/10 flex justify-between items-center w-full px-8 py-4 z-40">
-        <div className="text-xl font-light tracking-[0.2em] text-slate-200">SILENCE_OPS</div>
-        <nav className="hidden md:flex gap-8">
-          <button className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer bg-transparent border-0 p-0" onClick={() => navigate("/preflight")} type="button">Mission</button>
-          <button className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer bg-transparent border-0 p-0" onClick={() => navigate("/analytics")} type="button">Telemetry</button>
-          <span className="text-slate-100 font-medium cursor-default">Log</span>
-          <button className="text-slate-500 hover:text-slate-100 transition-colors duration-150 cursor-pointer bg-transparent border-0 p-0" onClick={() => navigate("/logbook")} type="button">Archive</button>
-        </nav>
-        <div className="flex gap-4">
-          <span className="material-symbols-outlined text-slate-500 hover:text-slate-100 cursor-pointer">settings</span>
-          <span className="material-symbols-outlined text-slate-500 hover:text-slate-100 cursor-pointer">account_circle</span>
-        </div>
-      </header>
-
       <main className="flex-grow flex flex-col items-center justify-center relative px-6 py-12">
         <div className="absolute inset-x-0 bottom-0 h-1/2 horizon-glow z-0"></div>
         <div className="relative z-10 w-full max-w-5xl flex flex-col items-center">
