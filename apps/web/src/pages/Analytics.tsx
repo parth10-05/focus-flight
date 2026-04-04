@@ -18,6 +18,13 @@ type BlockedSite = {
   domain: string;
 };
 
+type SessionMetricRow = {
+  id: string;
+  actual_duration: number | null;
+  distractions_blocked_count: number | null;
+  flights: SessionMetric["flights"] | Array<NonNullable<SessionMetric["flights"]>>;
+};
+
 export default function Analytics(): JSX.Element {
   const [sessions, setSessions] = useState<SessionMetric[]>([]);
   const [domains, setDomains] = useState<BlockedSite[]>([]);
@@ -42,7 +49,18 @@ export default function Analytics(): JSX.Element {
         return;
       }
 
-      setSessions((sessionData as SessionMetric[]) ?? []);
+      const normalizedSessions = ((sessionData as SessionMetricRow[] | null) ?? []).map((row) => {
+        const normalizedFlight = Array.isArray(row.flights) ? row.flights[0] ?? null : row.flights;
+
+        return {
+          id: row.id,
+          actual_duration: row.actual_duration,
+          distractions_blocked_count: row.distractions_blocked_count,
+          flights: normalizedFlight
+        } as SessionMetric;
+      });
+
+      setSessions(normalizedSessions);
       setDomains((domainData as BlockedSite[]) ?? []);
       setIsLoading(false);
     };
@@ -128,7 +146,7 @@ export default function Analytics(): JSX.Element {
                   WEEKLY TOTAL: {formatMinutesAsHm(totals.weeklyFocusMinutes.reduce((sum, minutes) => sum + minutes, 0))}
                 </div>
               </div>
-              <div className="h-64 flex items-end justify-between space-x-2 relative">
+              <div className="h-64 flex items-stretch justify-between space-x-2 relative">
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
                   <div className="border-t border-white w-full"></div>
                   <div className="border-t border-white w-full"></div>
@@ -141,7 +159,7 @@ export default function Analytics(): JSX.Element {
                   const isPeak = dayMinutes > 0 && label === totals.topDay;
 
                   return (
-                    <div key={label} className="flex-1 flex flex-col justify-end items-center">
+                    <div key={label} className="flex-1 h-full flex flex-col justify-end items-center">
                       <div
                         className={`w-full ${isPeak ? "bg-primary text-on-primary border-t-2 border-primary ring-1 ring-primary/20" : "bg-primary/20 border-t border-primary/60"}`}
                         style={{ height: `${dayHeight}%` }}
