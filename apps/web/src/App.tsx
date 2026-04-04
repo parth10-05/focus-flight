@@ -12,6 +12,7 @@ import { AppShell } from "@/components/layouts/AppShell";
 import Debrief from "@/pages/Debrief";
 import Logbook from "@/pages/Logbook";
 import PreFlight from "@/pages/PreFlight";
+import { sendToExtension } from "@/lib/extensionBridge";
 import { supabase } from "@/lib/supabase";
 
 function useSessionState(): { isLoading: boolean; isAuthenticated: boolean } {
@@ -21,11 +22,42 @@ function useSessionState(): { isLoading: boolean; isAuthenticated: boolean } {
   useEffect(() => {
     let mounted = true;
 
+    const syncSessionToExtension = (
+      session:
+        | {
+            access_token: string;
+            refresh_token: string;
+            user: { id: string };
+          }
+        | null
+        | undefined
+    ) => {
+      if (!session?.access_token || !session?.refresh_token || !session?.user?.id) {
+        sendToExtension({ type: "CLEAR_SESSION" });
+        return;
+      }
+
+      sendToExtension({
+        type: "SET_SESSION",
+        payload: {
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          user_id: session.user.id
+        }
+      });
+    };
+
     const initialize = async () => {
       const { data } = await supabase.auth.getSession();
       if (!mounted) {
         return;
       }
+
+      syncSessionToExtension(data.session as {
+        access_token: string;
+        refresh_token: string;
+        user: { id: string };
+      } | null);
 
       setIsAuthenticated(Boolean(data.session));
       setIsLoading(false);
@@ -39,6 +71,12 @@ function useSessionState(): { isLoading: boolean; isAuthenticated: boolean } {
       if (!mounted) {
         return;
       }
+
+       syncSessionToExtension(session as {
+        access_token: string;
+        refresh_token: string;
+        user: { id: string };
+      } | null);
 
       setIsAuthenticated(Boolean(session));
       setIsLoading(false);

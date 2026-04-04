@@ -8,17 +8,33 @@ import { AppShell } from "@/components/layouts/AppShell.tsx";
 import Debrief from "@/pages/Debrief.tsx";
 import Logbook from "@/pages/Logbook.tsx";
 import PreFlight from "@/pages/PreFlight.tsx";
+import { sendToExtension } from "@/lib/extensionBridge";
 import { supabase } from "@/lib/supabase";
 function useSessionState() {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     useEffect(() => {
         let mounted = true;
+        const syncSessionToExtension = (session) => {
+            if (!session?.access_token || !session?.refresh_token || !session?.user?.id) {
+                sendToExtension({ type: "CLEAR_SESSION" });
+                return;
+            }
+            sendToExtension({
+                type: "SET_SESSION",
+                payload: {
+                    access_token: session.access_token,
+                    refresh_token: session.refresh_token,
+                    user_id: session.user.id
+                }
+            });
+        };
         const initialize = async () => {
             const { data } = await supabase.auth.getSession();
             if (!mounted) {
                 return;
             }
+            syncSessionToExtension(data.session);
             setIsAuthenticated(Boolean(data.session));
             setIsLoading(false);
         };
@@ -27,6 +43,7 @@ function useSessionState() {
             if (!mounted) {
                 return;
             }
+            syncSessionToExtension(session);
             setIsAuthenticated(Boolean(session));
             setIsLoading(false);
         });

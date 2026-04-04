@@ -81,23 +81,6 @@ function isSessionLike(value) {
   return Boolean(value && typeof value === 'object' && value.access_token);
 }
 
-function getUserIdFromAccessToken(accessToken) {
-  try {
-    const tokenParts = String(accessToken || '').split('.');
-    if (tokenParts.length < 2) {
-      return null;
-    }
-
-    const base64 = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-    const payload = JSON.parse(atob(padded));
-
-    return typeof payload?.sub === 'string' ? payload.sub : null;
-  } catch {
-    return null;
-  }
-}
-
 function getFlightRemainingSeconds(flight) {
   const durationSec = Number(flight?.duration || 0);
   const startMs = new Date(flight?.start_time || '').getTime();
@@ -115,18 +98,13 @@ function isFlightExpired(flight) {
   return remainingSec !== null && remainingSec <= 0;
 }
 
-function buildFlightsPollUrl(configUrl, session) {
-  const userId = session?.access_token ? getUserIdFromAccessToken(session.access_token) : null;
+function buildFlightsPollUrl(configUrl) {
   const query = new URLSearchParams({
     status: 'eq.active',
     select: '*,blocked_sites(*)',
     order: 'start_time.desc',
     limit: '1'
   });
-
-  if (userId) {
-    query.set('user_id', `eq.${userId}`);
-  }
 
   return `${configUrl}/rest/v1/flights?${query.toString()}`;
 }
@@ -355,7 +333,7 @@ async function poll() {
       console.log('[AeroFocus] No session, polling with anon key only');
     }
 
-    const flightsUrl = buildFlightsPollUrl(config.url, session);
+    const flightsUrl = buildFlightsPollUrl(config.url);
     const response = await fetch(flightsUrl, { headers });
 
     if (response.status === 401) {
