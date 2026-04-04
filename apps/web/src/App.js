@@ -1,13 +1,13 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ActiveFlight from "@/pages/ActiveFlight.tsx";
-import Analytics from "@/pages/Analytics.tsx";
-import Auth from "@/pages/Auth.tsx";
-import { AppShell } from "@/components/layouts/AppShell.tsx";
-import Debrief from "@/pages/Debrief.tsx";
-import Logbook from "@/pages/Logbook.tsx";
-import PreFlight from "@/pages/PreFlight.tsx";
+import ActiveFlight from "@/pages/ActiveFlight";
+import Analytics from "@/pages/Analytics";
+import Auth from "@/pages/Auth";
+import { AppShell } from "@/components/layouts/AppShell";
+import Debrief from "@/pages/Debrief";
+import Logbook from "@/pages/Logbook";
+import PreFlight from "@/pages/PreFlight";
 import { supabase } from "@/lib/supabase";
 function useSessionState() {
     const [isLoading, setIsLoading] = useState(true);

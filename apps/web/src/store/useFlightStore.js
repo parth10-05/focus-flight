@@ -5,6 +5,8 @@ export const useFlightStore = create((set, get) => ({
     currentFlight: null,
     isActive: false,
     blockedSites: [],
+    aircraftType: null,
+    distanceKm: null,
     startFlight: async (config) => {
         const activeFlight = await getActiveFlight();
         if (activeFlight) {
@@ -14,7 +16,9 @@ export const useFlightStore = create((set, get) => ({
         set({
             currentFlight: flight,
             isActive: true,
-            blockedSites: config.blockedSites
+            blockedSites: config.blockedSites,
+            aircraftType: config.aircraftType ?? null,
+            distanceKm: config.distanceKm ?? null
         });
         return flight;
     },
@@ -27,7 +31,9 @@ export const useFlightStore = create((set, get) => ({
         set({
             currentFlight: null,
             isActive: false,
-            blockedSites: []
+            blockedSites: [],
+            aircraftType: null,
+            distanceKm: null
         });
     },
     syncWithBackend: async (_userId) => {
@@ -36,7 +42,9 @@ export const useFlightStore = create((set, get) => ({
             set({
                 currentFlight: null,
                 isActive: false,
-                blockedSites: []
+                blockedSites: [],
+                aircraftType: null,
+                distanceKm: null
             });
             return;
         }
@@ -50,14 +58,18 @@ export const useFlightStore = create((set, get) => ({
         set({
             currentFlight: activeFlight,
             isActive: true,
-            blockedSites: (blockedRows ?? []).map((row) => row.domain)
+            blockedSites: (blockedRows ?? []).map((row) => row.domain),
+            aircraftType: get().aircraftType,
+            distanceKm: get().distanceKm
         });
     },
     reset: () => {
         set({
             currentFlight: null,
             isActive: false,
-            blockedSites: []
+            blockedSites: [],
+            aircraftType: null,
+            distanceKm: null
         });
     }
 }));
