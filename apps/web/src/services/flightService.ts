@@ -95,7 +95,7 @@ export async function completeFlight(flightId: string, status: "completed" | "ab
     }
 
     const startAt = existingFlight.start_time ? new Date(existingFlight.start_time).getTime() : Date.now();
-    const actualDurationMinutes = Math.max(0, Math.round((Date.now() - startAt) / 60000));
+    const actualDurationMinutes = Math.max(0, Math.floor((Date.now() - startAt) / 60000));
     const endTime = new Date().toISOString();
 
     const { error: updateError } = await supabase

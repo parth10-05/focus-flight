@@ -4,6 +4,19 @@ import { DURATION_FILTERS, formatDuration, PRESET_ROUTES, REGIONS } from "@/data
 export function RouteSelector({ onSelect, selectedId }) {
     const [activeRegion, setActiveRegion] = useState("all");
     const [activeDuration, setActiveDuration] = useState("all");
+    const toCoordinate = (code, axis) => {
+        const hash = code
+            .split("")
+            .reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) * (index + 11), 0);
+        const max = axis === "lat" ? 180 : 360;
+        const shifted = ((hash % max) + max) % max;
+        const signed = axis === "lat" ? shifted - 90 : shifted - 180;
+        const absolute = Math.abs(signed).toFixed(4);
+        if (axis === "lat") {
+            return `${absolute} deg ${signed >= 0 ? "N" : "S"}`;
+        }
+        return `${absolute} deg ${signed >= 0 ? "E" : "W"}`;
+    };
     const matchesDuration = (route) => {
         if (activeDuration === "all") {
             return true;
@@ -23,63 +36,5 @@ export function RouteSelector({ onSelect, selectedId }) {
         const regionMatch = activeRegion === "all" || route.region === activeRegion;
         return regionMatch && matchesDuration(route);
     }), [activeDuration, activeRegion]);
-    return (_jsxs("div", { children: [_jsx("div", { style: { display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }, children: REGIONS.map((region) => (_jsx("button", { type: "button", onClick: () => setActiveRegion(region.id), style: {
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        letterSpacing: "0.1em",
-                        padding: "4px 10px",
-                        borderRadius: "var(--radius-small)",
-                        border: "none",
-                        cursor: "pointer",
-                        background: activeRegion === region.id ? "var(--color-accent-blue)" : "var(--color-elevated)",
-                        color: activeRegion === region.id ? "var(--color-base)" : "var(--color-text-muted)"
-                    }, children: region.label }, region.id))) }), _jsx("div", { style: { display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }, children: DURATION_FILTERS.map((duration) => (_jsx("button", { type: "button", onClick: () => setActiveDuration(duration.id), style: {
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "10px",
-                        letterSpacing: "0.1em",
-                        padding: "4px 10px",
-                        borderRadius: "var(--radius-small)",
-                        border: "none",
-                        cursor: "pointer",
-                        background: activeDuration === duration.id ? "var(--color-accent-green)" : "var(--color-elevated)",
-                        color: activeDuration === duration.id ? "var(--color-base)" : "var(--color-text-muted)"
-                    }, children: duration.label }, duration.id))) }), _jsx("div", { style: {
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-                    gap: "12px",
-                    maxHeight: "320px",
-                    overflowY: "auto",
-                    paddingRight: "4px"
-                }, children: filteredRoutes.map((route) => (_jsxs("button", { type: "button", onClick: () => onSelect(route), style: {
-                        background: selectedId === route.id ? "var(--color-elevated)" : "var(--color-surface)",
-                        border: selectedId === route.id ? "1px solid var(--color-accent-blue)" : "1px solid transparent",
-                        borderRadius: "var(--radius-standard)",
-                        padding: "12px",
-                        cursor: "pointer",
-                        textAlign: "left"
-                    }, children: [_jsxs("div", { style: {
-                                fontFamily: "var(--font-mono)",
-                                fontSize: "13px",
-                                fontWeight: 600,
-                                color: "var(--color-text-primary)",
-                                letterSpacing: "0.08em",
-                                marginBottom: "4px"
-                            }, children: [route.origin, " ", " -> ", " ", route.destination] }), _jsxs("div", { style: {
-                                fontFamily: "var(--font-sans)",
-                                fontSize: "11px",
-                                color: "var(--color-text-secondary)",
-                                marginBottom: "8px",
-                                lineHeight: 1.3
-                            }, children: [route.originCity, " ", " -> ", " ", route.destinationCity] }), _jsx("div", { style: {
-                                fontFamily: "var(--font-mono)",
-                                fontSize: "12px",
-                                color: "var(--color-accent-green)",
-                                letterSpacing: "0.06em"
-                            }, children: formatDuration(route.durationMinutes) }), _jsxs("div", { style: {
-                                fontFamily: "var(--font-mono)",
-                                fontSize: "10px",
-                                color: "var(--color-text-muted)",
-                                marginTop: "4px",
-                                letterSpacing: "0.06em"
-                            }, children: [route.aircraft, " - ", route.distanceKm.toLocaleString(), "KM"] })] }, route.id))) })] }));
+    return (_jsxs("div", { className: "preflight-route-selector", children: [_jsx("div", { className: "preflight-route-filters mb-4", children: REGIONS.map((region) => (_jsx("button", { type: "button", onClick: () => setActiveRegion(region.id), className: `preflight-chip ${activeRegion === region.id ? "is-active" : ""}`, children: region.label }, region.id))) }), _jsx("div", { className: "preflight-route-filters mb-5", children: DURATION_FILTERS.map((duration) => (_jsx("button", { type: "button", onClick: () => setActiveDuration(duration.id), className: `preflight-chip preflight-chip-alt ${activeDuration === duration.id ? "is-active" : ""}`, children: duration.label }, duration.id))) }), _jsx("div", { className: "preflight-route-grid", children: filteredRoutes.map((route) => (_jsxs("button", { type: "button", onClick: () => onSelect(route), className: `preflight-route-card ${selectedId === route.id ? "is-selected" : ""}`, children: [_jsx("div", { className: "preflight-route-code", children: route.id }), _jsxs("div", { className: "preflight-route-top-row", children: [_jsxs("div", { children: [_jsx("div", { className: "preflight-route-leg-label", children: "DEPARTURE" }), _jsx("div", { className: "preflight-route-iata", children: route.origin }), _jsxs("div", { className: "preflight-route-coords", children: [toCoordinate(route.origin, "lat"), ", ", toCoordinate(route.origin, "lng")] })] }), _jsxs("div", { className: "preflight-route-arrow", children: [_jsx("div", { className: "preflight-route-arrow-line" }), _jsx("span", { className: "material-symbols-outlined", children: "flight_takeoff" })] }), _jsxs("div", { className: "text-right", children: [_jsx("div", { className: "preflight-route-leg-label", children: "ARRIVAL" }), _jsx("div", { className: "preflight-route-iata", children: route.destination }), _jsxs("div", { className: "preflight-route-coords", children: [toCoordinate(route.destination, "lat"), ", ", toCoordinate(route.destination, "lng")] })] })] }), _jsxs("div", { className: "preflight-route-bottom-row", children: [_jsxs("div", { children: [_jsx("div", { className: "preflight-route-leg-label", children: "MISSION DURATION" }), _jsx("div", { className: "preflight-route-duration", children: formatDuration(route.durationMinutes) })] }), _jsxs("div", { className: "text-right", children: [_jsx("div", { className: "preflight-route-leg-label", children: "AIRCRAFT" }), _jsx("div", { className: "preflight-route-aircraft", children: route.aircraft }), _jsxs("div", { className: "preflight-route-distance", children: [route.distanceKm.toLocaleString(), "KM"] })] })] }), _jsxs("div", { className: "preflight-route-city-line", children: [route.originCity, " ", " -> ", " ", route.destinationCity] })] }, route.id))) })] }));
 }

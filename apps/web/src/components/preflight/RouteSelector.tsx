@@ -18,6 +18,23 @@ export function RouteSelector({ onSelect, selectedId }: RouteSelectorProps): JSX
   const [activeRegion, setActiveRegion] = useState<string>("all");
   const [activeDuration, setActiveDuration] = useState<DurationFilterId>("all");
 
+  const toCoordinate = (code: string, axis: "lat" | "lng"): string => {
+    const hash = code
+      .split("")
+      .reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) * (index + 11), 0);
+
+    const max = axis === "lat" ? 180 : 360;
+    const shifted = ((hash % max) + max) % max;
+    const signed = axis === "lat" ? shifted - 90 : shifted - 180;
+    const absolute = Math.abs(signed).toFixed(4);
+
+    if (axis === "lat") {
+      return `${absolute} deg ${signed >= 0 ? "N" : "S"}`;
+    }
+
+    return `${absolute} deg ${signed >= 0 ? "E" : "W"}`;
+  };
+
   const matchesDuration = (route: PresetRoute): boolean => {
     if (activeDuration === "all") {
       return true;
@@ -48,123 +65,72 @@ export function RouteSelector({ onSelect, selectedId }: RouteSelectorProps): JSX
   );
 
   return (
-    <div>
-      <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+    <div className="preflight-route-selector">
+      <div className="preflight-route-filters mb-4">
         {REGIONS.map((region) => (
           <button
             key={region.id}
             type="button"
             onClick={() => setActiveRegion(region.id)}
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              letterSpacing: "0.1em",
-              padding: "4px 10px",
-              borderRadius: "var(--radius-small)",
-              border: "none",
-              cursor: "pointer",
-              background: activeRegion === region.id ? "var(--color-accent-blue)" : "var(--color-elevated)",
-              color: activeRegion === region.id ? "var(--color-base)" : "var(--color-text-muted)"
-            }}
+            className={`preflight-chip ${activeRegion === region.id ? "is-active" : ""}`}
           >
             {region.label}
           </button>
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+      <div className="preflight-route-filters mb-5">
         {DURATION_FILTERS.map((duration) => (
           <button
             key={duration.id}
             type="button"
             onClick={() => setActiveDuration(duration.id)}
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "10px",
-              letterSpacing: "0.1em",
-              padding: "4px 10px",
-              borderRadius: "var(--radius-small)",
-              border: "none",
-              cursor: "pointer",
-              background: activeDuration === duration.id ? "var(--color-accent-green)" : "var(--color-elevated)",
-              color: activeDuration === duration.id ? "var(--color-base)" : "var(--color-text-muted)"
-            }}
+            className={`preflight-chip preflight-chip-alt ${activeDuration === duration.id ? "is-active" : ""}`}
           >
             {duration.label}
           </button>
         ))}
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-          gap: "12px",
-          maxHeight: "320px",
-          overflowY: "auto",
-          paddingRight: "4px"
-        }}
-      >
+      <div className="preflight-route-grid">
         {filteredRoutes.map((route) => (
-          <button
-            key={route.id}
-            type="button"
-            onClick={() => onSelect(route)}
-            style={{
-              background: selectedId === route.id ? "var(--color-elevated)" : "var(--color-surface)",
-              border: selectedId === route.id ? "1px solid var(--color-accent-blue)" : "1px solid transparent",
-              borderRadius: "var(--radius-standard)",
-              padding: "12px",
-              cursor: "pointer",
-              textAlign: "left"
-            }}
-          >
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "var(--color-text-primary)",
-                letterSpacing: "0.08em",
-                marginBottom: "4px"
-              }}
-            >
-              {route.origin} {" -> "} {route.destination}
+          <button key={route.id} type="button" onClick={() => onSelect(route)} className={`preflight-route-card ${selectedId === route.id ? "is-selected" : ""}`}>
+            <div className="preflight-route-code">{route.id}</div>
+
+            <div className="preflight-route-top-row">
+              <div>
+                <div className="preflight-route-leg-label">DEPARTURE</div>
+                <div className="preflight-route-iata">{route.origin}</div>
+                <div className="preflight-route-coords">{toCoordinate(route.origin, "lat")}, {toCoordinate(route.origin, "lng")}</div>
+              </div>
+
+              <div className="preflight-route-arrow">
+                <div className="preflight-route-arrow-line"></div>
+                <span className="material-symbols-outlined">flight_takeoff</span>
+              </div>
+
+              <div className="text-right">
+                <div className="preflight-route-leg-label">ARRIVAL</div>
+                <div className="preflight-route-iata">{route.destination}</div>
+                <div className="preflight-route-coords">{toCoordinate(route.destination, "lat")}, {toCoordinate(route.destination, "lng")}</div>
+              </div>
             </div>
 
-            <div
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "11px",
-                color: "var(--color-text-secondary)",
-                marginBottom: "8px",
-                lineHeight: 1.3
-              }}
-            >
+            <div className="preflight-route-bottom-row">
+              <div>
+                <div className="preflight-route-leg-label">MISSION DURATION</div>
+                <div className="preflight-route-duration">{formatDuration(route.durationMinutes)}</div>
+              </div>
+
+              <div className="text-right">
+                <div className="preflight-route-leg-label">AIRCRAFT</div>
+                <div className="preflight-route-aircraft">{route.aircraft}</div>
+                <div className="preflight-route-distance">{route.distanceKm.toLocaleString()}KM</div>
+              </div>
+            </div>
+
+            <div className="preflight-route-city-line">
               {route.originCity} {" -> "} {route.destinationCity}
-            </div>
-
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "12px",
-                color: "var(--color-accent-green)",
-                letterSpacing: "0.06em"
-              }}
-            >
-              {formatDuration(route.durationMinutes)}
-            </div>
-
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "10px",
-                color: "var(--color-text-muted)",
-                marginTop: "4px",
-                letterSpacing: "0.06em"
-              }}
-            >
-              {route.aircraft} - {route.distanceKm.toLocaleString()}KM
             </div>
           </button>
         ))}

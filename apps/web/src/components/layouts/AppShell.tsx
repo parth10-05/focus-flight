@@ -24,42 +24,22 @@ export function AppShell({ children, hideNav = false }: AppShellProps): JSX.Elem
   const navLinks = [
     { label: "HANGAR", to: "/preflight" },
     { label: "LOGBOOK", to: "/logbook" },
-    { label: "ANALYTICS", to: "/analytics" },
-    { label: "PROFILE", to: "/profile" }
+    { label: "ANALYTICS", to: "/analytics" }
   ];
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-base)", color: "var(--color-text-primary)" }}>
       {!hideNav ? (
-        <header
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 2rem",
-            height: "56px",
-            background: "var(--color-surface)",
-            borderBottom: "1px solid rgba(78,140,168,0.12)",
-            position: "sticky",
-            top: 0,
-            zIndex: 50
-          }}
-        >
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0d0e0f]/70 backdrop-blur-lg">
+          <div className="mx-auto flex h-16 w-full max-w-[1400px] items-center justify-between px-8">
           <Link
             to="/preflight"
-            style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "14px",
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              color: "var(--color-text-primary)",
-              textDecoration: "none"
-            }}
+            className="text-[#c1c7ce] text-sm font-semibold tracking-[0.18em] no-underline"
           >
             AEROFOCUS
           </Link>
 
-          <nav style={{ display: "flex", gap: "2rem" }}>
+          <nav className="hidden h-full items-center gap-8 md:flex">
             {navLinks.map((link) => {
               const active = location.pathname.startsWith(link.to);
 
@@ -67,16 +47,9 @@ export function AppShell({ children, hideNav = false }: AppShellProps): JSX.Elem
                 <Link
                   key={link.to}
                   to={link.to}
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "12px",
-                    letterSpacing: "0.1em",
-                    textDecoration: "none",
-                    color: active ? "var(--color-text-primary)" : "var(--color-text-muted)",
-                    borderBottom: active ? "2px solid var(--color-accent-blue)" : "2px solid transparent",
-                    paddingBottom: "4px",
-                    transition: "color 0.2s"
-                  }}
+                  className={`font-light tracking-[0.1em] text-sm uppercase no-underline pb-1 border-b-2 transition-colors duration-150 ${
+                    active ? "text-[#c1c7ce] border-[#c1c7ce]" : "text-[#939eb4] border-transparent hover:text-[#e4ebff]"
+                  }`}
                 >
                   {link.label}
                 </Link>
@@ -84,23 +57,22 @@ export function AppShell({ children, hideNav = false }: AppShellProps): JSX.Elem
             })}
           </nav>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div className="flex items-center gap-5">
+            <button
+              type="button"
+              className="material-symbols-outlined text-[#c1c7ce] text-[20px] hover:text-[#e4ebff] transition-colors"
+              aria-label="Open profile"
+              onClick={() => navigate("/profile")}
+            >
+              account_circle
+            </button>
             <button
               onClick={() => void handleLogout()}
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "11px",
-                letterSpacing: "0.08em",
-                color: "var(--color-text-muted)",
-                background: "none",
-                border: "1px solid rgba(78,140,168,0.2)",
-                borderRadius: "var(--radius-small)",
-                padding: "4px 12px",
-                cursor: "pointer"
-              }}
+              className="border border-[#c1c7ce]/20 px-4 py-1.5 text-[11px] text-[#939eb4] tracking-[0.12em] uppercase hover:text-[#c1c7ce] hover:border-[#c1c7ce]/40 transition-colors"
             >
               LOGOUT
             </button>
+          </div>
           </div>
         </header>
       ) : null}

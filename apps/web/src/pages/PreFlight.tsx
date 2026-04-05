@@ -174,104 +174,78 @@ export default function PreFlight(): JSX.Element {
 
   return (
     <div className="preflight-page text-on-background overflow-x-hidden">
-      <main className="px-12 py-10 min-h-screen">
-        <div className="max-w-4xl mx-auto flex flex-col items-center">
-          <header className="text-center mb-16">
-            <h1 className="text-5xl font-light tracking-[0.2em] text-primary uppercase mb-4">Plan Your Flight</h1>
-            <div className="h-[1px] w-24 bg-outline-variant/30 mx-auto mb-4"></div>
-            <p className="text-secondary font-light tracking-[0.1em] text-xs uppercase">Configuration for Stratospheric Silence session</p>
-          </header>
+      <main className="preflight-main px-6 md:px-12 py-8 md:py-10 min-h-screen">
+        <div className="mx-auto w-full max-w-7xl">
+          <form className="w-full" onSubmit={handleSubmit}>
+            <header className="mb-12 md:mb-14">
+              <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <h1 className="font-light text-4xl md:text-5xl tracking-[0.15em] text-on-surface uppercase">Mission Vectors</h1>
+                  <p className="font-mono text-[11px] text-on-surface-variant mt-2 tracking-[0.14em] uppercase">STRATOS_SURVEILLANCE_SYSTEM // PRESET_ARCHIVE_09</p>
+                </div>
 
-          <form className="w-full grid grid-cols-12 gap-8" onSubmit={handleSubmit}>
-            <section className="col-span-12 bg-surface-container-low p-10 border-l border-primary/20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 font-mono text-[10px] text-primary/20 tracking-tighter">COORD_SYS: ST-04</div>
-
-              <div style={{ display: "flex", gap: "0", marginBottom: "24px" }}>
-                <button
-                  type="button"
-                  onClick={() => handleModeSwitch("preset")}
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    letterSpacing: "0.1em",
-                    padding: "8px 20px",
-                    background: mode === "preset" ? "var(--color-accent-blue)" : "var(--color-elevated)",
-                    color: mode === "preset" ? "var(--color-base)" : "var(--color-text-muted)",
-                    border: "none",
-                    borderRadius: "var(--radius-small) 0 0 var(--radius-small)",
-                    cursor: "pointer"
-                  }}
-                >
-                  PRESET ROUTES
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleModeSwitch("custom")}
-                  style={{
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "11px",
-                    letterSpacing: "0.1em",
-                    padding: "8px 20px",
-                    background: mode === "custom" ? "var(--color-accent-blue)" : "var(--color-elevated)",
-                    color: mode === "custom" ? "var(--color-base)" : "var(--color-text-muted)",
-                    border: "none",
-                    borderRadius: "0 var(--radius-small) var(--radius-small) 0",
-                    cursor: "pointer"
-                  }}
-                >
-                  CUSTOM MISSION
-                </button>
+                <div className="preflight-mode-tabs">
+                  <button
+                    type="button"
+                    className={`preflight-mode-tab ${mode === "preset" ? "is-active" : ""}`}
+                    onClick={() => handleModeSwitch("preset")}
+                  >
+                    PRESET VECTORS
+                  </button>
+                  <button
+                    type="button"
+                    className={`preflight-mode-tab ${mode === "custom" ? "is-active" : ""}`}
+                    onClick={() => handleModeSwitch("custom")}
+                  >
+                    CUSTOM MISSION
+                  </button>
+                </div>
               </div>
+            </header>
+
+            <section className="preflight-panel preflight-panel-main">
+              <div className="preflight-panel-code">COORD_SYS: ST-04</div>
 
               {mode === "preset" ? (
-                <div style={{ marginBottom: "28px" }}>
-                  <div
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "10px",
-                      letterSpacing: "0.12em",
-                      color: "var(--color-text-muted)",
-                      marginBottom: "12px"
-                    }}
-                  >
-                    SELECT ROUTE // AUTO-FILLS MISSION PARAMETERS
-                  </div>
+                <div className="mb-8">
+                  <div className="preflight-panel-label mb-3">SELECT ROUTE // AUTO-FILLS MISSION PARAMETERS</div>
                   <RouteSelector onSelect={handleRouteSelect} selectedId={selectedRouteId} />
                 </div>
               ) : null}
 
-              <div className="grid grid-cols-2 gap-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                 <div className="space-y-8">
-                  <div className="group">
-                    <label className="block font-label text-[10px] text-secondary tracking-[0.15em] uppercase mb-2">Departure Vector</label>
+                  <div>
+                    <label className="preflight-field-label">Departure Vector</label>
                     <input
-                      className={`w-full bg-transparent border-b-2 ${errors.origin ? "border-[#ee7d77]" : "border-outline-variant"} focus:border-primary outline-none py-2 font-mono text-sm tracking-widest text-on-surface transition-all`}
+                      className={`preflight-text-input ${errors.origin ? "is-error" : ""}`}
                       placeholder="FOCUS_HUB_ALPHA"
                       type="text"
                       value={origin}
                       onChange={(event) => setOrigin(event.target.value)}
                     />
-                    {errors.origin ? <p className="mt-2 font-mono text-[10px] text-error">{errors.origin}</p> : null}
+                    {errors.origin ? <p className="preflight-field-error">{errors.origin}</p> : null}
                   </div>
-                  <div className="group">
-                    <label className="block font-label text-[10px] text-secondary tracking-[0.15em] uppercase mb-2">Arrival Destination</label>
+
+                  <div>
+                    <label className="preflight-field-label">Arrival Destination</label>
                     <input
-                      className={`w-full bg-transparent border-b-2 ${errors.destination ? "border-[#ee7d77]" : "border-outline-variant"} focus:border-primary outline-none py-2 font-mono text-sm tracking-widest text-on-surface transition-all`}
+                      className={`preflight-text-input ${errors.destination ? "is-error" : ""}`}
                       placeholder="DEEP_WORK_EPSILON"
                       type="text"
                       value={destination}
                       onChange={(event) => setDestination(event.target.value)}
                     />
-                    {errors.destination ? <p className="mt-2 font-mono text-[10px] text-error">{errors.destination}</p> : null}
+                    {errors.destination ? <p className="preflight-field-error">{errors.destination}</p> : null}
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-between">
+                <div className="flex flex-col justify-between gap-8">
                   <div>
-                    <label className="block font-label text-[10px] text-secondary tracking-[0.15em] uppercase mb-4">Flight Duration (MIN)</label>
+                    <label className="preflight-field-label">Flight Duration (MIN)</label>
                     <div className="flex items-end gap-4 mb-2">
-                      <span className="font-mono text-4xl text-primary font-light">{durationDisplay ?? "--"}</span>
-                      <span className="font-mono text-xs text-secondary pb-1">T-MINUS</span>
+                      <span className="font-mono text-4xl text-on-surface font-light">{durationDisplay ?? "--"}</span>
+                      <span className="font-mono text-xs text-on-surface-variant pb-1 tracking-[0.1em]">T-MINUS</span>
                     </div>
                     <input
                       className={`preflight-duration-slider w-full appearance-none bg-transparent cursor-pointer ${errors.duration ? "[&::-webkit-slider-runnable-track]:bg-[#ee7d77]" : ""}`}
@@ -281,9 +255,10 @@ export default function PreFlight(): JSX.Element {
                       value={durationDisplay ?? 15}
                       onChange={(event) => setDurationMinutes(Number(event.target.value))}
                     />
-                    {errors.duration ? <p className="mt-2 font-mono text-[10px] text-error">{errors.duration}</p> : null}
+                    {errors.duration ? <p className="preflight-field-error">{errors.duration}</p> : null}
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mt-8">
+
+                  <div className="grid grid-cols-2 gap-4">
                     <TelemetryTile label="Ox Level" value="98.2%" />
                     <TelemetryTile label="Signal" value="LOCKED" />
                   </div>
@@ -291,62 +266,53 @@ export default function PreFlight(): JSX.Element {
               </div>
             </section>
 
-            <section className="col-span-12 grid grid-cols-3 gap-6">
-              <div className="col-span-2 bg-surface-container-low p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-label text-xs tracking-[0.2em] text-primary uppercase mb-6 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">security</span>
-                    Blocked Sectors
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {blockedSites.map((domain, index) => (
-                      <BlockedSectorChip key={`${domain}-${index}`} label={domain} onRemove={() => removeBlockedDomain(index)} />
-                    ))}
-                    <button className="px-3 py-1 border border-primary/40 border-dashed hover:border-primary transition-colors" type="button" onClick={addBlockedDomain}>
-                      <span className="material-symbols-outlined text-[10px] text-primary">add</span>
-                    </button>
-                  </div>
+            <section className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 preflight-panel">
+                <h3 className="font-label text-[11px] tracking-[0.2em] text-on-surface uppercase mb-5 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">security</span>
+                  Blocked Sectors
+                </h3>
+
+                <div className="flex flex-wrap gap-3">
+                  {blockedSites.map((domain, index) => (
+                    <BlockedSectorChip key={`${domain}-${index}`} label={domain} onRemove={() => removeBlockedDomain(index)} />
+                  ))}
+
+                  <button className="preflight-add-domain" type="button" onClick={addBlockedDomain}>
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    ADD DOMAIN
+                  </button>
                 </div>
               </div>
 
-              <button
-                className="col-span-1 bg-primary p-6 flex flex-col justify-between items-start text-on-primary group cursor-pointer hover:bg-tertiary transition-colors text-left disabled:opacity-70 disabled:cursor-not-allowed"
-                type="submit"
-                disabled={isSubmitting}
-              >
+              <button className="preflight-submit-btn" type="submit" disabled={isSubmitting}>
                 <span className="material-symbols-outlined text-3xl font-light">rocket_launch</span>
                 <div>
-                  <div className="font-bold tracking-[0.2em] text-xs uppercase">{isSubmitting ? "Starting Flight" : "Commit Flight"}</div>
-                  <div className="font-mono text-[9px] opacity-70">{isSubmitting ? "EXECUTING..." : "EXECUTE_SILENCE_PROTOCOL"}</div>
+                  <div className="text-xs uppercase tracking-[0.2em] font-bold">{isSubmitting ? "Starting Flight" : "Initiate Vector"}</div>
+                  <div className="font-mono text-[10px] opacity-70 tracking-[0.08em]">{isSubmitting ? "EXECUTING..." : "EXECUTE_SILENCE_PROTOCOL"}</div>
                 </div>
               </button>
             </section>
 
-            {errors.submit ? <p className="col-span-12 font-mono text-[10px] text-error">{errors.submit}</p> : null}
+            {errors.submit ? <p className="mt-4 font-mono text-[10px] text-error">{errors.submit}</p> : null}
 
-            <div className="col-span-12 h-64 mt-8 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-surface-dim to-transparent z-10"></div>
-              <img
-                className="w-full h-full object-cover grayscale opacity-30"
-                data-alt="dramatic view of earth from space with atmospheric glow and dark void background"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWRmpU9-eZWovurdOYwh-15AqLGmmYTnB-FTBF0oSHw8y3Y-cQ28fcNhb12nNFtfoaQYZT0wA9kL4q0CFQpXzwkKxml6W5xUnAfeAY97oNHQF6y-U9e-ukRpxFj_6G9buaej1wKDjEYiGzQLHinmE8251_UtEMDxF-NOw9WqCqN2NianHc_IewdVZ1Nkk59KzTqsJySUMSCV5FLrNzNQDoaAkdQgTX5DjW7LxiLmTBL72EzcvTCEUlg5bkqZ93xtuGQXIOJfUvWYPx"
-              />
-              <div className="absolute bottom-8 left-8 z-20 space-y-1">
-                <div className="font-mono text-[10px] text-primary/60 tracking-[0.3em] uppercase">Current Visibility: Absolute</div>
-                <div className="font-mono text-[10px] text-primary/40 tracking-[0.3em] uppercase">Sector: 00-VOID</div>
+            <footer className="mt-12 preflight-footer-overlay">
+              <div className="flex flex-wrap gap-x-12 gap-y-5">
+                <FooterMetric label="Vectors Cached" value={PRESET_ROUTES.length.toLocaleString()} />
+                <FooterMetric label="Active Fleet" value="84" />
+                <FooterMetric label="System Status" value="Stable" withPulse />
               </div>
-            </div>
+
+              <div className="flex items-center gap-5">
+                <span className="font-mono text-[11px] text-on-surface-variant uppercase tracking-[0.12em]">Last sync: 04:20:11 UTC</span>
+                <button className="preflight-refresh-btn" type="button">
+                  REFRESH ARCHIVE
+                </button>
+              </div>
+            </footer>
           </form>
         </div>
       </main>
-
-      <footer className="p-8 border-t border-outline-variant/10 flex justify-between items-center">
-        <div className="flex gap-12">
-          <FooterMetric label="System Status" value="Nominal" withPulse />
-          <FooterMetric label="Neural Load" value="0.04 MS" />
-        </div>
-        <div className="font-mono text-[9px] text-secondary/40">© 2024 AEROFOCUS TECHNOLOGY SYSTEMS</div>
-      </footer>
     </div>
   );
 }
