@@ -24,7 +24,8 @@ export function AppShell({ children, hideNav = false }: AppShellProps): JSX.Elem
   const navLinks = [
     { label: "HANGAR", to: "/preflight" },
     { label: "LOGBOOK", to: "/logbook" },
-    { label: "ANALYTICS", to: "/analytics" }
+    { label: "ANALYTICS", to: "/analytics" },
+    { label: "PROFILE", to: "/profile" }
   ];
 
   return (

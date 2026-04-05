@@ -15,7 +15,8 @@ export function AppShell({ children, hideNav = false }) {
     const navLinks = [
         { label: "HANGAR", to: "/preflight" },
         { label: "LOGBOOK", to: "/logbook" },
-        { label: "ANALYTICS", to: "/analytics" }
+        { label: "ANALYTICS", to: "/analytics" },
+        { label: "PROFILE", to: "/profile" }
     ];
     return (_jsxs("div", { style: { minHeight: "100vh", background: "var(--color-base)", color: "var(--color-text-primary)" }, children: [!hideNav ? (_jsxs("header", { style: {
                     display: "flex",

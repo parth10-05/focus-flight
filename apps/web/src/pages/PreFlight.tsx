@@ -9,6 +9,7 @@ import type { PresetRoute } from "@/data/flightRoutes";
 import { PRESET_ROUTES } from "@/data/flightRoutes";
 import "@/components/preflight/preflight.css";
 import { getActiveFlight } from "@/services/flightService";
+import { getUserProfile, saveLastBlockedSites } from "@/services/userProfileService";
 import { useFlightStore } from "@/store/useFlightStore";
 
 interface PreFlightErrors {
@@ -33,11 +34,28 @@ export default function PreFlight(): JSX.Element {
     void redirectIfActiveFlightExists();
   }, [navigate]);
 
+  useEffect(() => {
+    const preloadBlockedSites = async () => {
+      try {
+        const profile = await getUserProfile();
+        if (!profile?.last_blocked_sites?.length) {
+          return;
+        }
+
+        setBlockedSites((current) => (current.length > 0 ? current : profile.last_blocked_sites));
+      } catch {
+        // no-op: preflight should still be usable even if profile defaults fail to load
+      }
+    };
+
+    void preloadBlockedSites();
+  }, []);
+
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
-  const [mode, setMode] = useState<"preset" | "custom">("preset");
+  const [mode, setMode] = useState<"preset" | "custom">("custom");
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<PreFlightErrors>({});
@@ -133,6 +151,8 @@ export default function PreFlight(): JSX.Element {
         aircraftType: selectedRoute?.aircraft,
         distanceKm: selectedRoute?.distanceKm
       });
+
+      await saveLastBlockedSites(blockedSites);
 
       navigate(`/flight/${flight.id}`);
     } catch (error) {

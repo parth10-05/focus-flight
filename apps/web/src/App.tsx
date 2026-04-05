@@ -12,6 +12,7 @@ import { AppShell } from "@/components/layouts/AppShell";
 import Debrief from "@/pages/Debrief";
 import Logbook from "@/pages/Logbook";
 import PreFlight from "@/pages/PreFlight";
+import Profile from "@/pages/Profile";
 import { sendToExtension } from "@/lib/extensionBridge";
 import { supabase } from "@/lib/supabase";
 
@@ -171,6 +172,16 @@ export default function App(): JSX.Element {
             <RequireAuth>
               <AppShell>
                 <Analytics />
+              </AppShell>
+            </RequireAuth>
+          )}
+        />
+        <Route
+          path="/profile"
+          element={(
+            <RequireAuth>
+              <AppShell>
+                <Profile />
               </AppShell>
             </RequireAuth>
           )}

@@ -16,9 +16,13 @@ body {
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 50% 45%, rgba(193, 199, 206, 0.08), transparent 60%),
-    linear-gradient(180deg, #090a0b, #0d0e0f 60%);
-  opacity: 0.95;
+    radial-gradient(circle at 50% 45%, rgba(193, 199, 206, 0.06), transparent 62%),
+    linear-gradient(180deg, rgba(9, 10, 11, 0.82), rgba(13, 14, 15, 0.9) 65%),
+    url("https://lh3.googleusercontent.com/aida-public/AB6AXuD0kuUvYCvoP-aehQNVT9q-kt-ccMAF13vveHbhPXNvNLo5d9oOUN8iOgM4rPjdF-O5vO18sYtcSRNzokwsFxp2F2ROCRkckJQGjz2Q4T-biYH8UGrXz6yHrRR7Wf3o_xhnDC9ObPaz35azvbfUFuZT3BpQTx7WSWmjvj81VSe-Om8T5pIb7F41nGkZ2T2eEQm-XUpSxiT-8QZVAU91aZo4Jy4IlhAoqexA7eS0ScJ96ZN67tCb0JcvuRSDDhF72NIpQbTTj40WPWJ3");
+  background-size: auto, auto, cover;
+  background-position: center, center, center;
+  background-repeat: no-repeat;
+  opacity: 1;
 }
 
 .status-bar {
