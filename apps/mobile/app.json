@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "AeroFocus Mobile",
+    "slug": "aerofocus-mobile",
+    "scheme": "aerofocus",
+    "plugins": [
+      "expo-router",
+      "./plugins/withBackgroundModes",
+      "./plugins/withNotifications"
+    ],
+    "android": {
+      "package": "com.anonymous.aerofocusmobile"
+    }
+  }
+}
