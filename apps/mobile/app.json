@@ -3,13 +3,17 @@
     "name": "AeroFocus Mobile",
     "slug": "aerofocus-mobile",
     "scheme": "aerofocus",
+    "platforms": [
+      "android"
+    ],
     "plugins": [
-      "expo-router",
-      "./plugins/withBackgroundModes",
-      "./plugins/withNotifications"
+      "expo-router"
     ],
     "android": {
-      "package": "com.anonymous.aerofocusmobile"
+      "package": "com.anonymous.aerofocusmobile",
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ]
     }
   }
 }

@@ -2,6 +2,11 @@
   "name": "aerofocus",
   "private": true,
   "packageManager": "pnpm@10.28.0",
+  "pnpm": {
+    "overrides": {
+      "metro-cache": "0.81.0"
+    }
+  },
   "workspaces": [
     "apps/*",
     "packages/*"

@@ -9,8 +9,7 @@ export async function registerBackgroundTasks(): Promise<void> {
     return;
   }
 
-  // iOS background fetch has an OS-enforced minimum interval of roughly 15 minutes.
-  // For tighter expiry behavior, keep foreground expiry handling active via useCountdown.
+  // Keep foreground expiry handling active via useCountdown for tight timing behavior.
   await BackgroundFetch.registerTaskAsync(FLIGHT_EXPIRY_TASK, {
     minimumInterval: 60,
     stopOnTerminate: false,

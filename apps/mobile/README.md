@@ -6,6 +6,7 @@
 - pnpm (workspace uses pnpm)
 - Expo CLI
 - EAS CLI
+- Android Studio + Android SDK (platform-tools)
 
 ## Setup
 
@@ -30,15 +31,15 @@ npx expo start --go
 - Native modules are limited in Expo Go.
 - Features depending on custom native code (for example app blocker service) need a development build.
 
-### Native run (full features)
+### Native run on physical Android device (full features)
 
 ```bash
-npx expo run:ios
-npx expo run:android
+npx expo run:android --device
 ```
 
 - Full native capability.
-- Requires native project generation via prebuild.
+- Installs and launches directly on a connected phone.
+- Requires USB debugging enabled on the phone.
 
 ## Prebuild
 
@@ -55,24 +56,24 @@ EAS profiles are defined in [eas.json](eas.json).
 ```bash
 # Development client
 npx eas build --platform android --profile development
-npx eas build --platform ios --profile development
 
 # Internal preview
 npx eas build --platform android --profile preview
-npx eas build --platform ios --profile preview
 
-# Store-ready production
+# Production APK
 npx eas build --platform android --profile production
-npx eas build --platform ios --profile production
 ```
 
+### Install APK on phone
+
+1. Run one of the Android EAS build commands above.
+2. Open the build URL shown in terminal after build completion.
+3. Download the `.apk` on the phone and install it.
+4. If Android blocks install, allow install from unknown sources for your browser/files app, then retry.
+
+This project is configured as Android-only.
+
 ## Platform Notes
-
-### iOS FamilyControls
-
-- App/category blocking on iOS requires FamilyControls-related entitlements.
-- Entitlements require Apple approval and can take time.
-- Plan for a fallback UX while approval is pending.
 
 ### Android Accessibility Service
 

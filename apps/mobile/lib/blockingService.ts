@@ -1,5 +1,3 @@
-import { Platform } from "react-native";
-
 import AppBlocker from "../modules/app-blocker";
 
 const ANDROID_PACKAGE_LOOKUP: Record<string, string> = {
@@ -63,11 +61,6 @@ export async function ensurePermission(): Promise<boolean> {
 
 export async function activateBlocking(domains: string[]): Promise<void> {
   const cleaned = domains.map((entry) => entry.trim()).filter((entry) => entry.length > 0);
-
-  if (Platform.OS === "ios") {
-    await AppBlocker.startBlocking(cleaned);
-    return;
-  }
 
   const resolvedList = resolveAndroidPackages(cleaned);
   await AppBlocker.startBlocking(resolvedList);

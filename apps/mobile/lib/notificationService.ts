@@ -2,12 +2,12 @@ import * as Notifications from "expo-notifications";
 
 export async function requestPermission(): Promise<boolean> {
   const current = await Notifications.getPermissionsAsync();
-  if (current.granted || current.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL) {
+  if (current.granted) {
     return true;
   }
 
   const requested = await Notifications.requestPermissionsAsync();
-  return requested.granted || requested.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
+  return requested.granted;
 }
 
 export async function scheduleMissionReminder(
