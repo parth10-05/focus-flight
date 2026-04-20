@@ -1,4 +1,4 @@
-import AppBlocker from "../modules/app-blocker";
+import AppBlocker from "app-blocker";
 
 const ANDROID_PACKAGE_LOOKUP: Record<string, string> = {
   youtube: "com.google.android.youtube",

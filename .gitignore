@@ -3,3 +3,4 @@ dist
 .env
 apps/extension/.env
 stitch_flight_mode_focus_app
+modules
